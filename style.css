@@ -1,0 +1,22 @@
+body { font-family: 'Segoe UI', sans-serif; background:#cac271; padding:20px; line-height:1.5; }
+.container { max-width: 1200px; margin:auto; }
+h1 { text-align:center; color:#333; margin-bottom:20px; }
+
+.menu button { margin:5px; padding:10px 15px; background:#007bff; color:white; border:none; border-radius:5px; cursor:pointer; transition: background 0.2s; }
+.menu button:hover { background:#0056b3; }
+
+.acciones button { margin:5px; padding:8px 12px; background:#28a745; color:white; border:none; border-radius:5px; cursor:pointer; transition: background 0.2s; }
+.acciones button:hover { background:#1e7e34; }
+
+.add-btn { margin-bottom:10px; background:#17a2b8; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; transition: background 0.2s; }
+.add-btn:hover { background:#117a8b; }
+
+.pagina { display:none; margin-top:20px; }
+
+table { width:100%; border-collapse:collapse; background:#fff; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
+th, td { border:1px solid #ddd; padding:8px; text-align:center; }
+th { background:#17a2b8; color:white; }
+td input, td select { width:100%; padding:4px; border-radius:3px; }
+tbody tr:nth-child(even) { background:#f9f9f9; }
+button { cursor:pointer; border-radius:4px; }
+button:hover { opacity:0.8; }

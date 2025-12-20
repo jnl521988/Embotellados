@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>GESTIÓN DE EMBOTELLADOS</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+<div class="container">
+
+<h1>GESTIÓN DE EMBOTELLADOS</h1>
+
+<div class="menu">
+  <button onclick="mostrar('inicio')">Inicio</button>
+  <button onclick="mostrar('embotellado')">Embotellado</button>
+  <button onclick="mostrar('inventario')">Inventario</button>
+  <button onclick="mostrar('botellas')">Botellas</button>
+  <button onclick="mostrar('corchos')">Corchos</button>
+  <button onclick="mostrar('tirillasDO')">Tirillas DO</button>
+  <button onclick="mostrar('etiquetas')">Etiquetas</button>
+  <button onclick="mostrar('capsulas')">Cápsulas</button>
+  <button onclick="mostrar('cajas')">Cajas</button>
+</div>
+
+<div class="acciones">
+  <button onclick="mostrar('inicio')">Volver</button>
+  <button onclick="guardar()">Guardar</button>
+  <button onclick="exportarExcel()">Exportar Excel</button>
+  <button onclick="exportarPDF()">Exportar PDF</button>
+</div>
+
+<!-- Inicio -->
+<section id="inicio" class="pagina">
+  <p>Seleccione una sección para comenzar.</p>
+</section>
+
+<!-- Embotellado -->
+<section id="embotellado" class="pagina">
+<h2>Embotellado</h2>
+<button class="add-btn" onclick="addFila('tablaEmbotellado')">➕ Añadir fila</button>
+<table id="tablaEmbotellado">
+<thead>
+<tr>
+<th>Fecha</th><th>Marca</th><th>Añada</th><th>Lote</th>
+<th>Embotellado</th><th>Sin Etiquetar</th><th>Etiquetado</th>
+<th>Muestra DO</th><th>Letra DO</th>
+<th>DO Inicial</th><th>DO Final</th><th>Total DO</th>
+<th>Roturas DO</th><th>Palets Botellas</th><th>Gasto Cajas</th>
+<th>Observaciones</th><th>Días</th><th>Eliminar</th>
+</tr>
+</thead>
+<tbody>
+<tr onchange="calcEmbotellado(this)">
+<td><input type="date"></td>
+<td>
+<select>
+<option>24 Mozas</option><option>Madremia</option><option>Abracadabra</option>
+<option>Platón</option><option>Loquillo Tinto</option>
+<option>Encomienda de la Vega</option>
+<option>MG 24 Mozas</option><option>MG Madremia</option>
+<option>MG Abracadabra</option><option>Vocablos</option>
+<option>Loquillo Rosado</option><option>El Principito</option>
+<option>Varios</option>
+</select>
+</td>
+<td><input type="number"></td>
+<td><input></td>
+<td><input class="emb" type="number"></td>
+<td><input class="sin" type="number"></td>
+<td><input class="etiq" disabled></td>
+<td><input></td>
+<td><input></td>
+<td><input class="ini" type="number"></td>
+<td><input class="fin" type="number"></td>
+<td><input class="totaldo" disabled></td>
+<td><input class="roturas" disabled></td>
+<td><input class="palets" type="number"></td>
+<td><input class="cajas" disabled></td>
+<td><input></td>
+<td><input type="number"></td>
+<td><button onclick="eliminarFila(this)">🗑️</button></td>
+</tr>
+</tbody>
+</table>
+</section>
+
+<!-- Inventario -->
+<section id="inventario" class="pagina">
+<h2>Inventario</h2>
+<button class="add-btn" onclick="addFila('tablaInventario')">➕ Añadir fila</button>
+<table id="tablaInventario">
+<thead>
+<tr>
+<th>Marca</th><th>Añada</th><th>Etiquetado</th><th>Sin Etiquetar</th><th>Total</th><th>Observaciones</th><th>Eliminar</th>
+</tr>
+</thead>
+<tbody>
+<script>
+const marcas=["24 Mozas","Madremia","Abracadabra","Platón","Loquillo Tinto","Encomienda de la Vega","Loquillo Rosado","El Principito","Vocablos","MG 24 Mozas","MG Madremia","MG Abracadabra"];
+const tbodyInv=document.getElementById('tablaInventario')?.querySelector('tbody');
+if(tbodyInv){
+  marcas.forEach(marca=>{
+    for(let i=0;i<2;i++){
+      const tr=document.createElement('tr');
+      tr.addEventListener('change',()=>calcInventario(tr));
+      tr.innerHTML=`<td>${marca}</td><td><input type="number"></td>
+<td><input class="etiq" type="number"></td>
+<td><input class="sin" type="number"></td>
+<td><input class="total" disabled></td>
+<td><input></td>
+<td><button onclick="eliminarFila(this)">🗑️</button></td>`;
+      tbodyInv.appendChild(tr);
+    }
+  });
+}
+</script>
+</tbody>
+</table>
+</section>
+
+<!-- Botellas -->
+<section id="botellas" class="pagina">
+<h2>Botellas</h2>
+<button class="add-btn" onclick="addFila('tablaBotellas')">➕ Añadir fila</button>
+<table id="tablaBotellas">
+<thead>
+<tr>
+<th>Marca</th><th>Modelo</th><th>Capacidad</th>
+<th>Entrada</th><th>Total</th>
+<th>Consumo</th><th>Gasto</th>
+<th>Stock</th><th>Eliminar</th>
+</tr>
+</thead>
+<tbody>
+<tr><td>SAVERGLASS</td><td>PREMIERE</td><td>0.75</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
+<tr><td>SAVERGLASS</td><td>VINO SANTO</td><td>0.75</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
+<tr><td>SAVERGLASS</td><td>ANCIENNE 2</td><td>0.75</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
+<tr><td>VIDRIALA</td><td>BD CLARA</td><td>0.75</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
+<tr><td>VIDRIALA</td><td>BD RESERVA</td><td>0.75</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
+<tr><td>VIDRIALA</td><td>BD RESERVA</td><td>0.5</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
+<tr><td>VIDRIALA</td><td>BD MG PLUS</td><td>1.5</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
+</tbody>
+</table>
+</section>
+
+<!-- Corchos -->
+<section id="corchos" class="pagina">
+<h2>Corchos</h2>
+<button class="add-btn" onclick="addFila('tablaCorchos')">➕ Añadir fila</button>
+<table id="tablaCorchos">
+<thead>
+<tr>
+<th>Marca</th><th>Modelo</th>
+<th>Entrada</th><th>Total</th>
+<th>Consumo</th><th>Gasto</th>
+<th>Stock</th><th>Eliminar</th>
+</tr>
+</thead>
+<tbody>
+<tr><td>Bourrasse</td><td>24 Mozas</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
+<tr><td>Bourrasse</td><td>Madremia</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
+<tr><td>Bourrasse</td><td>Platón</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
+<tr><td>Bourrasse</td><td>El Principito</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
+<tr><td>Ebrocork</td><td>Abracadabra</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
+<tr><td>Amorin Cork</td><td>Abracadabra</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
+<tr><td>J. Vigas</td><td>Toro</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
+</tbody>
+</table>
+</section>
+
+<!-- Tirillas DO -->
+<section id="tirillasDO" class="pagina">
+<h2>Tirillas DO</h2>
+<button class="add-btn" onclick="addFila('tablaTirillasDO')">➕ Añadir fila</button>
+<table id="tablaTirillasDO">
+<thead>
+<tr>
+<th>Fecha</th><th>Marca</th><th>Añada</th><th>Muestra DO</th><th>Letra DO</th>
+<th>DO Desde</th><th>DO Hasta</th><th>Total DO</th><th>Gasto DO</th><th>Roturas DO</th><th>Existencias</th><th>Eliminar</th>
+</tr>
+</thead>
+<tbody>
+<tr onchange="calcTirillasDO(this)">
+<td><input type="date"></td>
+<td><input type="text"></td>
+<td><input type="number"></td>
+<td><input></td>
+<td><input></td>
+<td><input type="number"></td>
+<td><input type="number"></td>
+<td><input class="totaldo" disabled></td>
+<td><input class="gasto" type="number"></td>
+<td><input class="roturas" type="number"></td>
+<td><input class="existencias" disabled></td>
+<td><button onclick="eliminarFila(this)">🗑️</button></td>
+</tr>
+</tbody>
+</table>
+</section>
+
+<!-- Etiquetas -->
+<section id="etiquetas" class="pagina">
+<h2>Etiquetas</h2>
+<button class="add-btn" onclick="addFila('tablaEtiquetas')">➕ Añadir fila</button>
+<table id="tablaEtiquetas">
+<thead>
+<tr>
+<th>Producto</th><th>Entrada</th><th>Total</th><th>Consumo</th><th>Gasto</th><th>Stock</th><th>Eliminar</th>
+</tr>
+</thead>
+<tbody>
+<tr><td>Producto 1</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
+</tbody>
+</table>
+</section>
+
+<!-- Capsulas -->
+<section id="capsulas" class="pagina">
+<h2>Cápsulas</h2>
+<button class="add-btn" onclick="addFila('tablaCapsulas')">➕ Añadir fila</button>
+<table id="tablaCapsulas">
+<thead>
+<tr>
+<th>Producto</th><th>Entrada</th><th>Total</th><th>Consumo</th><th>Gasto</th><th>Stock</th><th>Eliminar</th>
+</tr>
+</thead>
+<tbody>
+<tr><td>Producto 1</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
+</tbody>
+</table>
+</section>
+
+<!-- Cajas -->
+<section id="cajas" class="pagina">
+<h2>Cajas</h2>
+<button class="add-btn" onclick="addFila('tablaCajas')">➕ Añadir fila</button>
+<table id="tablaCajas">
+<thead>
+<tr>
+<th>Producto</th><th>Entrada</th><th>Total</th><th>Consumo</th><th>Gasto</th><th>Stock</th><th>Eliminar</th>
+</tr>
+</thead>
+<tbody>
+<tr><td>Producto 1</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
+</tbody>
+</table>
+</section>
+
+<script src="script.js"></script>
+</div>
+</body>
+</html>
