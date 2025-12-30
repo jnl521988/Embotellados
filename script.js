@@ -25,9 +25,9 @@ function addFila(tablaId){
     <option>Platón</option><option>Loquillo Tinto</option>
     <option>Encomienda de la Vega</option>
     <option>MG 24 Mozas</option><option>MG Madremia</option>
-    <option>MG Abracadabra</option><option>Vocablos</option>
+    <option>MG Abracadabra</option><option>Divina Proporción</option>
     <option>Loquillo Rosado</option><option>El Principito</option>
-    <option>Varios</option>
+    <option>Vocablos</option>Varios<option>
   </select>
 </td>
 <td><input type="number"></td>
@@ -66,18 +66,32 @@ function addFila(tablaId){
   else if(tablaId === 'tablaTirillasDO'){
     tr.innerHTML = `
 <td><input type="date"></td>
-<td><input></td>
+<td><select>
+    <option>24 Mozas</option>
+    <option>Madremia</option>
+    <option>Abracadabra</option>
+    <option>Platón</option>
+    <option>Loquillo Tinto</option>
+    <option>Encomienda de la Vega</option>
+    <option>Loquillo Rosado</option>
+    <option>El Principito</option>
+    <option>Divina Proporción</option>
+  </select></td>
 <td><input type="number"></td>
 <td><input></td>
 <td><input></td>
 <td><input class="desde" type="number"></td>
 <td><input class="hasta" type="number"></td>
 <td><input class="totaldo" disabled></td>
-<td><input class="gasto" type="number"></td>
-<td><input class="roturas" type="number"></td>
+<td><input class="consumo" type="number" data-total="0"></td>
+<td><input class="consumo-rotas" type="number" data-total="0"></td>
+<td><input class="gasto" disabled></td>
+<td><input class="roturas" disabled></td>
 <td><input class="existencias" disabled></td>
 <td><button onclick="eliminarFila(this)">🗑️</button></td>`;
-    tr.addEventListener('change',()=>calcTirillasDO(tr));
+
+    tbody.appendChild(tr);
+    setupFilaTirillas(tr); // Inicializar eventos
   }
 
   /* STOCK (botellas, corchos, etiquetas, cápsulas, cajas) */
@@ -88,9 +102,8 @@ function addFila(tablaId){
     tr.querySelectorAll('input').forEach(i=>{
       i.addEventListener('change',()=>acumularStock(i));
     });
+    tbody.appendChild(tr);
   }
-
-  tbody.appendChild(tr);
 }
 
 
@@ -139,30 +152,27 @@ window.onload = ()=>{
       });
     });
   });
+
+  // Inicializar Tirillas DO al cargar
+  document.querySelectorAll('#tablaTirillasDO tbody tr').forEach(fila => setupFilaTirillas(fila));
 };
 
 
 /**********************
- * EXPORTAR TABLA VISIBLE
+ * EXPORTAR
  **********************/
 function exportarExcel(){
   const tablaVisible = document.querySelector('.pagina[style*="display: block"] table');
-  if(!tablaVisible){
-    alert('No hay tabla visible para exportar');
-    return;
-  }
+  if(!tablaVisible){ alert('No hay tabla visible para exportar'); return; }
 
-  // Construir datos reales de la tabla
   const datos = [];
-  tablaVisible.querySelectorAll('tr').forEach(tr => {
+  tablaVisible.querySelectorAll('tr').forEach(tr=>{
     const fila = [];
-    tr.querySelectorAll('td, th').forEach((td, i, arr) => {
-      if(i === arr.length - 1) return; // Ignorar última columna (Eliminar)
+    tr.querySelectorAll('td, th').forEach((td, i, arr)=>{
+      if(i===arr.length-1) return;
       const input = td.querySelector('input');
       const select = td.querySelector('select');
-      if(input) fila.push(input.value);
-      else if(select) fila.push(select.value);
-      else fila.push(td.textContent.trim());
+      fila.push(input ? input.value : (select ? select.value : td.textContent.trim()));
     });
     datos.push(fila);
   });
@@ -170,43 +180,37 @@ function exportarExcel(){
   const ws = XLSX.utils.aoa_to_sheet(datos);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, tablaVisible.id);
-  XLSX.writeFile(wb, tablaVisible.id + '.xlsx');
+  XLSX.writeFile(wb, tablaVisible.id+'.xlsx');
 }
 
 function exportarPDF(){
   const tablaVisible = document.querySelector('.pagina[style*="display: block"] table');
-  if(!tablaVisible){
-    alert('No hay tabla visible para exportar');
-    return;
-  }
+  if(!tablaVisible){ alert('No hay tabla visible para exportar'); return; }
 
-  // Construir datos reales de la tabla
   const body = [];
-  tablaVisible.querySelectorAll('tbody tr').forEach(tr => {
-    const fila = [];
-    tr.querySelectorAll('td').forEach((td, i, arr) => {
-      if(i === arr.length - 1) return; // Ignorar última columna (Eliminar)
+  tablaVisible.querySelectorAll('tbody tr').forEach(tr=>{
+    const fila=[];
+    tr.querySelectorAll('td').forEach((td,i,arr)=>{
+      if(i===arr.length-1) return;
       const input = td.querySelector('input');
       const select = td.querySelector('select');
-      if(input) fila.push(input.value);
-      else if(select) fila.push(select.value);
-      else fila.push(td.textContent.trim());
+      fila.push(input ? input.value : (select ? select.value : td.textContent.trim()));
     });
     body.push(fila);
   });
 
-  const headers = [];
-  tablaVisible.querySelectorAll('thead th').forEach((th, i, arr) => {
-    if(i === arr.length - 1) return; // Ignorar columna Eliminar
+  const headers=[];
+  tablaVisible.querySelectorAll('thead th').forEach((th,i,arr)=>{
+    if(i===arr.length-1) return;
     headers.push(th.textContent.trim());
   });
 
   const { jsPDF } = window.jspdf;
   const pdf = new jsPDF('l','pt');
-  pdf.text(tablaVisible.id, 40, 30);
-  pdf.autoTable({ head: [headers], body: body, startY: 50 });
-  pdf.save(tablaVisible.id + '.pdf');
-}
+  pdf.text(tablaVisible.id,40,30);
+  pdf.autoTable({ head:[headers], body:body, startY:50 });
+  pdf.save(tablaVisible.id+'.pdf');
+};
 
 
 /**********************
@@ -232,16 +236,6 @@ function calcInventario(f){
   f.querySelector('.total').value = e + s;
 }
 
-function calcTirillasDO(f){
-  const d = +f.querySelector('.desde').value||0;
-  const h = +f.querySelector('.hasta').value||0;
-  const total = h - d;
-  f.querySelector('.totaldo').value = total;
-
-  const gasto = +f.querySelector('.gasto').value||0;
-  f.querySelector('.existencias').value = total - gasto;
-}
-
 function acumularStock(input){
   const tr = input.closest('tr');
   const entrada = tr.cells[tr.cells.length-6].querySelector('input');
@@ -262,4 +256,188 @@ function acumularStock(input){
 
   entrada.value='';
   consumo.value='';
+}
+
+
+/**********************
+ * TIRILLAS DO FUNCIONAL
+ **********************/
+function setupFilaTirillas(fila){
+  // Acumulativos internos para no mostrar en los inputs
+  fila.dataset.acumConsumo = fila.dataset.acumConsumo || 0;
+  fila.dataset.acumRotas = fila.dataset.acumRotas || 0;
+
+  fila.querySelector('.consumo').addEventListener('keydown', e=>{
+    if(e.key==='Enter'){
+      e.preventDefault();
+      const valor = parseInt(e.target.value)||0;
+      fila.dataset.acumConsumo = parseInt(fila.dataset.acumConsumo)+valor;
+      e.target.value = ''; // limpiar input
+      calcTirillasDO(fila);
+      e.target.focus();
+    }
+  });
+
+  fila.querySelector('.consumo-rotas').addEventListener('keydown', e=>{
+    if(e.key==='Enter'){
+      e.preventDefault();
+      const valor = parseInt(e.target.value)||0;
+      fila.dataset.acumRotas = parseInt(fila.dataset.acumRotas)+valor;
+      e.target.value = ''; // limpiar input
+      calcTirillasDO(fila);
+      e.target.focus();
+    }
+  });
+
+  fila.querySelectorAll('.desde, .hasta').forEach(input=>{
+    input.addEventListener('input', ()=>calcTirillasDO(fila));
+  });
+}
+
+function calcTirillasDO(fila){
+  const desde = parseInt(fila.querySelector('.desde').value) || 0;
+  const hasta = parseInt(fila.querySelector('.hasta').value) || 0;
+  const total = hasta >= desde ? (hasta - desde) : 0;
+
+  const consumo = parseInt(fila.dataset.acumConsumo) || 0;
+  const rotas = parseInt(fila.dataset.acumRotas) || 0;
+  const gasto = consumo + rotas;
+  const existencias = total - gasto;
+
+  fila.querySelector('.totaldo').value = total;
+  fila.querySelector('.gasto').value = gasto;
+  fila.querySelector('.roturas').value = rotas;
+  fila.querySelector('.existencias').value = existencias >= 0 ? existencias : 0;
+}
+/**********************
+ * PRODUCTOS
+ **********************/
+let productos = [];
+
+// Añadir producto
+function añadirProducto() {
+  const nombre = document.getElementById('prod-nombre').value.trim();
+  const tipo = document.getElementById('prod-tipo').value.trim();
+  const descripcion = document.getElementById('prod-desc').value.trim();
+  const añada = document.getElementById('prod-añada').value.trim();
+
+  if(!nombre) {
+    alert('El nombre del producto es obligatorio');
+    return;
+  }
+
+  const producto = {
+    id: Date.now(), // ID único
+    nombre,
+    tipo,
+    descripcion,
+    añada
+  };
+
+  productos.push(producto);
+  guardarProductos();
+  renderizarProductos();
+  limpiarFormulario();
+  actualizarSelectProductos(); // actualizar selects al añadir
+}
+
+// Limpiar formulario
+function limpiarFormulario() {
+  document.getElementById('prod-nombre').value = '';
+  document.getElementById('prod-tipo').value = '';
+  document.getElementById('prod-desc').value = '';
+  document.getElementById('prod-añada').value = '';
+}
+
+// Renderizar tabla de productos
+function renderizarProductos() {
+  const tbody = document.querySelector('#tablaProductos tbody');
+  tbody.innerHTML = '';
+
+  productos.forEach(prod => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${prod.nombre}</td>
+      <td>${prod.tipo}</td>
+      <td>${prod.descripcion}</td>
+      <td>${prod.añada}</td>
+      <td>
+        <button onclick="editarProducto(${prod.id})">✏️ Editar</button>
+        <button onclick="eliminarProducto(${prod.id})">🗑️ Eliminar</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// Eliminar producto
+function eliminarProducto(id) {
+  if(!confirm('¿Seguro que quieres eliminar este producto?')) return;
+  productos = productos.filter(p => p.id !== id);
+  guardarProductos();
+  renderizarProductos();
+  actualizarSelectProductos(); // actualizar selects al eliminar
+}
+
+// Editar producto
+function editarProducto(id) {
+  const prod = productos.find(p => p.id === id);
+  if(!prod) return;
+
+  const nuevoNombre = prompt('Nombre:', prod.nombre);
+  if(nuevoNombre !== null) prod.nombre = nuevoNombre.trim();
+
+  const nuevoTipo = prompt('Tipo:', prod.tipo);
+  if(nuevoTipo !== null) prod.tipo = nuevoTipo.trim();
+
+  const nuevaDesc = prompt('Descripción:', prod.descripcion);
+  if(nuevaDesc !== null) prod.descripcion = nuevaDesc.trim();
+
+  const nuevaAñada = prompt('Añada:', prod.añada);
+  if(nuevaAñada !== null) prod.añada = nuevaAñada.trim();
+
+  guardarProductos();
+  renderizarProductos();
+  actualizarSelectProductos(); // actualizar selects al editar
+}
+
+// Guardar productos en localStorage
+function guardarProductos() {
+  localStorage.setItem('productos', JSON.stringify(productos));
+}
+
+// Cargar productos de localStorage al iniciar
+document.addEventListener('DOMContentLoaded', () => {
+  const guardados = JSON.parse(localStorage.getItem('productos'));
+  if(guardados) productos = guardados;
+  renderizarProductos();
+  actualizarSelectProductos();
+});
+
+/**********************
+ * PRODUCTOS EN SELECT
+ **********************/
+function actualizarSelectProductos() {
+  const listaProductos = productos.map(p => p.nombre);
+
+  ['tablaEtiquetas', 'tablaCapsulas', 'tablaCajas'].forEach(tablaId => {
+    const tabla = document.getElementById(tablaId);
+    if (!tabla) return;
+
+    tabla.querySelectorAll('tbody tr').forEach(tr => {
+      const celda = tr.querySelector('td.producto');
+      if (!celda) return;
+
+      const valorActual = celda.querySelector('select')?.value || '';
+
+      const select = document.createElement('select');
+      select.innerHTML = `<option value="">--Seleccione--</option>` +
+                         listaProductos.map(p => `<option value="${p}">${p}</option>`).join('');
+
+      if (valorActual) select.value = valorActual;
+
+      celda.innerHTML = '';
+      celda.appendChild(select);
+    });
+  });
 }

@@ -23,6 +23,7 @@
   <button onclick="mostrar('etiquetas')">Etiquetas</button>
   <button onclick="mostrar('capsulas')">Cápsulas</button>
   <button onclick="mostrar('cajas')">Cajas</button>
+  <button onclick="mostrar('Productos')">Productos</button>
 </div>
 
 <div class="acciones">
@@ -61,9 +62,9 @@
 <option>Platón</option><option>Loquillo Tinto</option>
 <option>Encomienda de la Vega</option>
 <option>MG 24 Mozas</option><option>MG Madremia</option>
-<option>MG Abracadabra</option><option>Vocablos</option>
+<option>MG Abracadabra</option><option>Divina Proporción</option>
 <option>Loquillo Rosado</option><option>El Principito</option>
-<option>Varios</option>
+<option>Vocablos</option><option>Varios</option>
 </select>
 </td>
 <td><input type="number"></td>
@@ -179,27 +180,37 @@ if(tbodyInv){
 <thead>
 <tr>
 <th>Fecha</th><th>Marca</th><th>Añada</th><th>Muestra DO</th><th>Letra DO</th>
-<th>DO Desde</th><th>DO Hasta</th><th>Total DO</th><th>Gasto DO</th><th>Roturas DO</th><th>Existencias</th><th>Eliminar</th>
+<th>DO Desde</th><th>DO Hasta</th><th>Total DO</th><th>Consumo DO</th>
+<th>Consumo Rotas DO</th><th>Gasto DO</th><th>Roturas DO</th><th>Existencias</th><th>Eliminar</th>
 </tr>
 </thead>
 <tbody>
-<tr onchange="calcTirillasDO(this)">
+<tr>
 <td><input type="date"></td>
-<td><input type="text"></td>
+<td><select>
+<option>24 Mozas</option><option>Madremia</option><option>Abracadabra</option>
+<option>Platón</option><option>Loquillo Tinto</option>
+<option>Encomienda de la Vega</option>
+<option>Loquillo Rosado</option><option>El Principito</option>
+<option>Divina Proporción</option>
+</select></td>
 <td><input type="number"></td>
 <td><input></td>
 <td><input></td>
-<td><input type="number"></td>
-<td><input type="number"></td>
+<td><input class="desde" type="number"></td>
+<td><input class="hasta" type="number"></td>
 <td><input class="totaldo" disabled></td>
-<td><input class="gasto" type="number"></td>
-<td><input class="roturas" type="number"></td>
+<td><input class="consumo" type="number" data-total="0"></td>
+<td><input class="consumo-rotas" type="number" data-total="0"></td>
+<td><input class="gasto" disabled></td>
+<td><input class="roturas" disabled></td>
 <td><input class="existencias" disabled></td>
 <td><button onclick="eliminarFila(this)">🗑️</button></td>
 </tr>
 </tbody>
 </table>
 </section>
+
 
 <!-- Etiquetas -->
 <section id="etiquetas" class="pagina">
@@ -208,14 +219,25 @@ if(tbodyInv){
 <table id="tablaEtiquetas">
 <thead>
 <tr>
-<th>Producto</th><th>Entrada</th><th>Total</th><th>Consumo</th><th>Gasto</th><th>Stock</th><th>Eliminar</th>
+<th>Producto</th><th>Añada</th><th>Entrada</th><th>Total</th><th>Consumo</th><th>Gasto</th><th>Stock</th><th>Eliminar</th>
 </tr>
 </thead>
 <tbody>
-<tr><td>Producto 1</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
+<tr>
+  <td class="producto"></td> <!-- select dinámico -->
+  <td><input type="number" onchange="acumularStock(this)"></td> <!-- Añada -->
+  <td><input type="number" onchange="acumularStock(this)"></td> <!-- Entrada -->
+  <td><input disabled value="0"></td> <!-- Total -->
+  <td><input type="number" onchange="acumularStock(this)"></td> <!-- Consumo -->
+  <td><input disabled value="0"></td> <!-- Gasto -->
+  <td><input disabled value="0"></td> <!-- Stock -->
+  <td><button onclick="eliminarFila(this)">🗑️</button></td>
+</tr>
 </tbody>
+
 </table>
 </section>
+
 
 <!-- Capsulas -->
 <section id="capsulas" class="pagina">
@@ -228,10 +250,19 @@ if(tbodyInv){
 </tr>
 </thead>
 <tbody>
-<tr><td>Producto 1</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
+<tr>
+  <td class="producto"></td>
+  <td><input onchange="acumularStock(this)"></td>
+  <td><input disabled value="0"></td>
+  <td><input onchange="acumularStock(this)"></td>
+  <td><input disabled value="0"></td>
+  <td><input disabled value="0"></td>
+  <td><button onclick="eliminarFila(this)">🗑️</button></td>
+</tr>
 </tbody>
 </table>
 </section>
+
 
 <!-- Cajas -->
 <section id="cajas" class="pagina">
@@ -244,9 +275,47 @@ if(tbodyInv){
 </tr>
 </thead>
 <tbody>
-<tr><td>Producto 1</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
+<tr>
+  <td class="producto"></td>
+  <td><input onchange="acumularStock(this)"></td>
+  <td><input disabled value="0"></td>
+  <td><input onchange="acumularStock(this)"></td>
+  <td><input disabled value="0"></td>
+  <td><input disabled value="0"></td>
+  <td><button onclick="eliminarFila(this)">🗑️</button></td>
+</tr>
 </tbody>
 </table>
+</section>
+
+<!-- PÁGINA PRODUCTOS -->
+<section id="Productos" class="pagina" style="display:none">
+  <h2>Gestión de Productos</h2>
+  
+  <!-- Panel de creación de producto -->
+  <div class="panel-productos">
+    <input type="text" id="prod-nombre" placeholder="Nombre">
+    <input type="text" id="prod-tipo" placeholder="Tipo">
+    <input type="text" id="prod-desc" placeholder="Descripción">
+    <input type="number" id="prod-añada" placeholder="Añada">
+    <button onclick="añadirProducto()">Añadir Producto</button>
+  </div>
+
+  <!-- Tabla de productos -->
+  <table id="tablaProductos">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Tipo</th>
+        <th>Descripción</th>
+        <th>Añada</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Los productos se generan dinámicamente con JS -->
+    </tbody>
+  </table>
 </section>
 
 <script src="script.js"></script>
