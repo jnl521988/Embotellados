@@ -260,39 +260,33 @@ function acumularStock(input){
 
 
 /**********************
- * TIRILLAS DO FUNCIONAL
+ * TIRILLAS DO FUNCIONAL (COMPATIBLE MÓVIL)
  **********************/
 function setupFilaTirillas(fila){
-  // Acumulativos internos para no mostrar en los inputs
   fila.dataset.acumConsumo = fila.dataset.acumConsumo || 0;
   fila.dataset.acumRotas = fila.dataset.acumRotas || 0;
 
-  fila.querySelector('.consumo').addEventListener('keydown', e=>{
-    if(e.key==='Enter'){
-      e.preventDefault();
+  // SUMA CONSISTENTE EN PC + MÓVIL
+  fila.querySelector('.consumo').addEventListener('change', e=>{
       const valor = parseInt(e.target.value)||0;
-      fila.dataset.acumConsumo = parseInt(fila.dataset.acumConsumo)+valor;
-      e.target.value = ''; // limpiar input
+      fila.dataset.acumConsumo = parseInt(fila.dataset.acumConsumo) + valor;
+      e.target.value = ''; // siempre limpiar
       calcTirillasDO(fila);
-      e.target.focus();
-    }
   });
 
-  fila.querySelector('.consumo-rotas').addEventListener('keydown', e=>{
-    if(e.key==='Enter'){
-      e.preventDefault();
+  fila.querySelector('.consumo-rotas').addEventListener('change', e=>{
       const valor = parseInt(e.target.value)||0;
-      fila.dataset.acumRotas = parseInt(fila.dataset.acumRotas)+valor;
-      e.target.value = ''; // limpiar input
+      fila.dataset.acumRotas = parseInt(fila.dataset.acumRotas) + valor;
+      e.target.value = '';
       calcTirillasDO(fila);
-      e.target.focus();
-    }
   });
 
+  // Cálculo de total DO
   fila.querySelectorAll('.desde, .hasta').forEach(input=>{
     input.addEventListener('input', ()=>calcTirillasDO(fila));
   });
 }
+
 
 function calcTirillasDO(fila){
   const desde = parseInt(fila.querySelector('.desde').value) || 0;
@@ -309,6 +303,7 @@ function calcTirillasDO(fila){
   fila.querySelector('.roturas').value = rotas;
   fila.querySelector('.existencias').value = existencias >= 0 ? existencias : 0;
 }
+
 /**********************
  * PRODUCTOS
  **********************/
@@ -440,4 +435,31 @@ function actualizarSelectProductos() {
       celda.appendChild(select);
     });
   });
+}
+
+
+/********************************
+ * AÑADIR FILA EN TABLAS STOCK
+ ********************************/
+function addFila(tablaId) {
+  const tabla = document.getElementById(tablaId);
+  const tbody = tabla.querySelector('tbody');
+  const filaBase = tbody.querySelector('tr'); // primera fila como plantilla
+  const nuevaFila = filaBase.cloneNode(true);
+
+  // Limpiar inputs
+  nuevaFila.querySelectorAll('input').forEach(i => {
+    if (!i.disabled) i.value = "";
+    if (i.disabled) i.value = 0;
+  });
+
+  // Limpiar select
+  const selectExistente = nuevaFila.querySelector('select');
+  if (selectExistente) selectExistente.value = "";
+
+  // Agregar fila
+  tbody.appendChild(nuevaFila);
+
+  // 🔥 Volver a poner los selects con productos
+  actualizarSelectProductos();
 }
