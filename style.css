@@ -2,12 +2,6 @@ body { font-family: 'Segoe UI', sans-serif; background:#cac271; padding:20px; li
 .container { max-width: 1200px; margin:auto; }
 h1 { text-align:center; color:#333; margin-bottom:20px; }
 
-.menu button { margin:5px; padding:10px 15px; background:#007bff; color:white; border:none; border-radius:5px; cursor:pointer; transition: background 0.2s; }
-.menu button:hover { background:#0056b3; }
-
-.acciones button { margin:5px; padding:8px 12px; background:#28a745; color:white; border:none; border-radius:5px; cursor:pointer; transition: background 0.2s; }
-.acciones button:hover { background:#1e7e34; }
-
 .add-btn { margin-bottom:10px; background:#17a2b8; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; transition: background 0.2s; }
 .add-btn:hover { background:#117a8b; }
 
@@ -20,3 +14,55 @@ td input, td select { width:100%; padding:4px; border-radius:3px; }
 tbody tr:nth-child(even) { background:#f9f9f9; }
 button { cursor:pointer; border-radius:4px; }
 button:hover { opacity:0.8; }
+/* 🎨 Colores individuales por botón */
+.btn-inicio      { background:#6f42c1; }  /* Morado */
+.btn-embotellado { background:#007bff; }  /* Azul */
+.btn-inventario  { background:#28a745; }  /* Verde */
+.btn-botellas    { background:#ff8800; }  /* Naranja */
+.btn-corchos     { background:#b21f2d; }  /* Rojo vino */
+.btn-tirillas    { background:#20c997; }  /* Verde menta */
+.btn-etiquetas   { background:#e83e8c; }  /* Rosa */
+.btn-capsulas    { background:#6610f2; }  /* Púrpura */
+.btn-cajas       { background:#856404; }  /* Mostaza */
+.btn-productos   { background:#17a2b8; }  /* Celeste */
+
+/* Hover general para que quede uniforme */
+.menu button:hover { opacity:0.8; }
+
+/* Acciones con colores diferenciados */
+.acciones button:nth-child(1) { background:#6c757d; } /* Volver */
+.acciones button:nth-child(2) { background:#28a745; } /* Guardar */
+.acciones button:nth-child(3) { background:#007bff; } /* Excel */
+.acciones button:nth-child(4) { background:#dc3545; } /* PDF */
+/* 🔧 Ajuste general de tamaño */
+.menu {
+  display: flex;
+  flex-wrap: nowrap;      /* Mantiene TODO en una fila */
+  justify-content: center;
+  gap: 8px;               /* Espacio entre botones */
+}
+
+.menu button {
+  padding: 12px 20px;     /* Más grandes, pero controlado */
+  font-size: 17px;        /* Texto más visible */
+  min-width: 110px;       /* Tamaño mínimo para alinear */
+  border-radius: 6px;
+  color: white;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;     /* No se parte el texto */
+}
+
+/* 🔧 Botones de acciones también un poco más grandes */
+.acciones {
+  display: flex;
+  justify-content: flex-start;
+  gap: 8px;
+  margin-left: 10px;  /* opcional */
+  margin-top: 20px;   /* 👉 separa de lo que está arriba */
+}
+
+.acciones button {
+  padding: 10px 18px;
+  font-size: 16px;
+}

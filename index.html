@@ -14,17 +14,18 @@
 <h1>GESTIÓN DE EMBOTELLADOS</h1>
 
 <div class="menu">
-  <button onclick="mostrar('inicio')">Inicio</button>
-  <button onclick="mostrar('embotellado')">Embotellado</button>
-  <button onclick="mostrar('inventario')">Inventario</button>
-  <button onclick="mostrar('botellas')">Botellas</button>
-  <button onclick="mostrar('corchos')">Corchos</button>
-  <button onclick="mostrar('tirillasDO')">Tirillas DO</button>
-  <button onclick="mostrar('etiquetas')">Etiquetas</button>
-  <button onclick="mostrar('capsulas')">Cápsulas</button>
-  <button onclick="mostrar('cajas')">Cajas</button>
-  <button onclick="mostrar('Productos')">Productos</button>
+  <button class="btn-inicio" onclick="mostrar('inicio')">Inicio</button>
+  <button class="btn-embotellado" onclick="mostrar('embotellado')">Embotellado</button>
+  <button class="btn-inventario" onclick="mostrar('inventario')">Inventario</button>
+  <button class="btn-botellas" onclick="mostrar('botellas')">Botellas</button>
+  <button class="btn-corchos" onclick="mostrar('corchos')">Corchos</button>
+  <button class="btn-tirillas" onclick="mostrar('tirillasDO')">Tirillas DO</button>
+  <button class="btn-etiquetas" onclick="mostrar('etiquetas')">Etiquetas</button>
+  <button class="btn-capsulas" onclick="mostrar('capsulas')">Cápsulas</button>
+  <button class="btn-cajas" onclick="mostrar('cajas')">Cajas</button>
+  <button class="btn-productos" onclick="mostrar('Productos')">Productos</button>
 </div>
+
 
 <div class="acciones">
   <button onclick="mostrar('inicio')">Volver</button>
@@ -99,28 +100,34 @@
 </tr>
 </thead>
 <tbody>
-<script>
-const marcas=["24 Mozas","Madremia","Abracadabra","Platón","Loquillo Tinto","Encomienda de la Vega","Loquillo Rosado","El Principito","Vocablos","MG 24 Mozas","MG Madremia","MG Abracadabra"];
-const tbodyInv=document.getElementById('tablaInventario')?.querySelector('tbody');
-if(tbodyInv){
-  marcas.forEach(marca=>{
-    for(let i=0;i<2;i++){
-      const tr=document.createElement('tr');
-      tr.addEventListener('change',()=>calcInventario(tr));
-      tr.innerHTML=`<td>${marca}</td><td><input type="number"></td>
-<td><input class="etiq" type="number"></td>
-<td><input class="sin" type="number"></td>
-<td><input class="total" disabled></td>
-<td><input></td>
-<td><button onclick="eliminarFila(this)">🗑️</button></td>`;
-      tbodyInv.appendChild(tr);
-    }
-  });
-}
-</script>
+  <!-- Las filas iniciales se generarán con JS -->
 </tbody>
 </table>
 </section>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const marcas = ["24 Mozas","Madremia","Abracadabra","Platón","Loquillo Tinto","Encomienda de la Vega","Loquillo Rosado","El Principito","Vocablos","MG 24 Mozas","MG Madremia","MG Abracadabra"];
+  const tbodyInv = document.getElementById('tablaInventario').querySelector('tbody');
+
+  // Crear filas iniciales con marcas
+  marcas.forEach(marca => {
+    for (let i = 0; i < 2; i++) {
+      const tr = document.createElement('tr');
+      tr.addEventListener('change', ()=>calcInventario(tr));
+      tr.innerHTML = `
+        <td><input placeholder="Marca"></td>
+        <td><input type="number"></td>
+        <td><input class="etiq" type="number"></td>
+        <td><input class="sin" type="number"></td>
+        <td><input class="total" disabled></td>
+        <td><input></td>
+        <td><button onclick="eliminarFila(this)">🗑️</button></td>`;
+      tbodyInv.appendChild(tr);
+    }
+  });
+});
+</script>
 
 <!-- Botellas -->
 <section id="botellas" class="pagina">

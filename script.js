@@ -50,17 +50,27 @@ function addFila(tablaId){
   }
 
   /* INVENTARIO */
+  
   else if(tablaId === 'tablaInventario'){
-    tr.innerHTML = `
-<td><input></td>
-<td><input type="number"></td>
-<td><input class="etiq" type="number"></td>
-<td><input class="sin" type="number"></td>
-<td><input class="total" disabled></td>
+  tr.innerHTML = `
+<td><input placeholder="Marca"></td>
+<td><input type="number" value="0"></td>
+<td><input class="etiq" type="number" value="0"></td>
+<td><input class="sin" type="number" value="0"></td>
+<td><input class="total" disabled value="0"></td>
 <td><input></td>
 <td><button onclick="eliminarFila(this)">🗑️</button></td>`;
-    tr.addEventListener('change',()=>calcInventario(tr));
-  }
+
+  // Listener para recalcular total al escribir
+  tr.querySelectorAll('.etiq, .sin').forEach(input => {
+    input.addEventListener('input', () => calcInventario(tr));
+  });
+
+  // Finalmente agregar fila al tbody
+  tbody.appendChild(tr);
+}
+
+  
 
   /* TIRILLAS DO */
   else if(tablaId === 'tablaTirillasDO'){
