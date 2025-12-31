@@ -356,6 +356,7 @@ function renderizarProductos() {
       <td>${prod.tipo}</td>
       <td>${prod.descripcion}</td>
       <td>${prod.añada}</td>
+      <td class="stock-prod">0</td>   <!-- 🆕 Celda de stock -->
       <td>
         <button onclick="editarProducto(${prod.id})">✏️ Editar</button>
         <button onclick="eliminarProducto(${prod.id})">🗑️ Eliminar</button>
@@ -408,6 +409,62 @@ document.addEventListener('DOMContentLoaded', () => {
   renderizarProductos();
   actualizarSelectProductos();
 });
+/********************************************
+ * 📦 STOCK GLOBAL POR PRODUCTO
+ ********************************************/
+function obtenerStockProducto(nombreProd){
+  let total = 0;
+
+  const tablas = [
+    { id: "tablaEtiquetas", colStock: 6 },
+    { id: "tablaCapsulas",  colStock: 5 },
+    { id: "tablaCajas",     colStock: 5 }
+  ];
+
+  tablas.forEach(obj => {
+    const tabla = document.getElementById(obj.id);
+    if(!tabla) return;
+
+    tabla.querySelectorAll("tbody tr").forEach(fila => {
+      const select = fila.querySelector("td.producto select");
+      const stockInput = fila.children[obj.colStock].querySelector("input");
+
+      if(select && stockInput && select.value === nombreProd){
+        total += parseInt(stockInput.value) || 0;
+      }
+    });
+  });
+
+  return total;
+}
+
+/********************************************
+ * 🔄 ACTUALIZA STOCK EN TABLA PRODUCTOS
+ ********************************************/
+function actualizarStocksEnProductos(){
+  const tabla = document.getElementById("tablaProductos");
+  if(!tabla) return;
+
+  tabla.querySelectorAll("tbody tr").forEach(fila => {
+    const nombre = fila.children[0].textContent.trim(); // columna NOMBRE
+    const celdaStock = fila.querySelector(".stock-prod");
+    if(celdaStock) celdaStock.textContent = obtenerStockProducto(nombre);
+  });
+}
+
+/********************************************
+ * 🧲 ESCUCHADORES QUE REFRESCAN STOCK
+ ********************************************/
+["tablaEtiquetas","tablaCapsulas","tablaCajas"].forEach(id=>{
+  const tabla = document.getElementById(id);
+  if(tabla){
+    tabla.addEventListener("input", actualizarStocksEnProductos);
+    tabla.addEventListener("change", actualizarStocksEnProductos);
+  }
+});
+
+// 🚀 Al cargar la página
+document.addEventListener("DOMContentLoaded", actualizarStocksEnProductos);
 
 /**********************
  * PRODUCTOS EN SELECT
@@ -463,3 +520,57 @@ function addFila(tablaId) {
   // 🔥 Volver a poner los selects con productos
   actualizarSelectProductos();
 }
+/********************************************
+ * SELECTS FIJOS PARA BOTELLAS Y CORCHOS
+ ********************************************/
+
+// Opciones predefinidas
+const opcionesBotellas = {
+  marca: ["SAVERGLASS", "VIDRIALA", "VERALLIA", "ESLA"],
+  modelo: ["PREMIERE", "DOGMA ASIA", "VINO SANTO", "ANCIENNE 2", "BD CLARA", "BD RESERVA", "BD MG PLUS", "CÓNICA PESANTE"],
+  capacidad: ["0.75", "1.5", "0.5"]
+};
+
+const opcionesCorchos = {
+  marca: ["BOURRASSE", "AMORIN CORK", "EBROCORK", "INDECORK", "J. VIGAS", "PARRAMON"],
+  modelo: ["24 MOZAS", "MADREMIA", "ABRACADABRA", "PLATÓN", "EL PRINCIPITO", "TORO"]
+};
+
+
+// 🔥 Genera selects para una fila dada
+function generarSelectsBotellas(fila){
+  fila.children[0].innerHTML = crearSelect(opcionesBotellas.marca);
+  fila.children[1].innerHTML = crearSelect(opcionesBotellas.modelo);
+  fila.children[2].innerHTML = crearSelect(opcionesBotellas.capacidad);
+}
+
+function generarSelectsCorchos(fila){
+  fila.children[0].innerHTML = crearSelect(opcionesCorchos.marca);
+  fila.children[1].innerHTML = crearSelect(opcionesCorchos.modelo);
+}
+
+
+// 🔧 Función para crear un select desde un array
+function crearSelect(lista){
+  return `<select><option value="">--Seleccione--</option>${lista.map(v=>`<option>${v}</option>`).join("")}</select>`;
+}
+
+
+// 🚀 Activar selects al cargar
+document.addEventListener("DOMContentLoaded", ()=>{
+  document.querySelectorAll("#tablaBotellas tbody tr").forEach(generarSelectsBotellas);
+  document.querySelectorAll("#tablaCorchos tbody tr").forEach(generarSelectsCorchos);
+});
+
+
+// ➕ Que las nuevas filas también tengan select
+const oldAddFila = addFila; 
+addFila = function(tablaId){
+  oldAddFila(tablaId);
+
+  const tabla = document.getElementById(tablaId);
+  const nuevaFila = tabla.querySelector("tbody").lastElementChild;
+
+  if(tablaId === "tablaBotellas") generarSelectsBotellas(nuevaFila);
+  if(tablaId === "tablaCorchos") generarSelectsCorchos(nuevaFila);
+};
