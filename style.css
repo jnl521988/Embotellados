@@ -15,16 +15,16 @@ tbody tr:nth-child(even) { background:#f9f9f9; }
 button { cursor:pointer; border-radius:4px; }
 button:hover { opacity:0.8; }
 /* 🎨 Colores individuales por botón */
-.btn-inicio      { background:#6f42c1; }  /* Morado */
+.btn-inicio      { background:#4abf06; }  /* Morado */
 .btn-embotellado { background:#007bff; }  /* Azul */
-.btn-inventario  { background:#28a745; }  /* Verde */
-.btn-botellas    { background:#ff8800; }  /* Naranja */
-.btn-corchos     { background:#b21f2d; }  /* Rojo vino */
-.btn-tirillas    { background:#20c997; }  /* Verde menta */
-.btn-etiquetas   { background:#e83e8c; }  /* Rosa */
+.btn-inventario  { background:#007bff; }  /* Verde */
+.btn-botellas    { background:#824805; }  /* Naranja */
+.btn-corchos     { background:#824805; }  /* Rojo vino */
+.btn-tirillas    { background:#b21f2d; }  /* Verde menta */
+.btn-etiquetas   { background:#6610f2; }  /* Rosa */
 .btn-capsulas    { background:#6610f2; }  /* Púrpura */
-.btn-cajas       { background:#856404; }  /* Mostaza */
-.btn-productos   { background:#17a2b8; }  /* Celeste */
+.btn-cajas       { background:#6610f2; }  /* Mostaza */
+.btn-productos   { background:#4abf06; } 
 
 /* Hover general para que quede uniforme */
 .menu button:hover { opacity:0.8; }
@@ -33,7 +33,7 @@ button:hover { opacity:0.8; }
 .acciones button:nth-child(1) { background:#6c757d; } /* Volver */
 .acciones button:nth-child(2) { background:#28a745; } /* Guardar */
 .acciones button:nth-child(3) { background:#007bff; } /* Excel */
-.acciones button:nth-child(4) { background:#dc3545; } /* PDF */
+.acciones button:nth-child(4) { background:#007bff; } /* PDF */
 /* 🔧 Ajuste general de tamaño */
 .menu {
   display: flex;
@@ -65,4 +65,40 @@ button:hover { opacity:0.8; }
 .acciones button {
   padding: 10px 18px;
   font-size: 16px;
+}
+/* 📱 Hacer que los botones no se corten en móviles */
+.acciones {
+  display: flex;
+  justify-content: flex-start;
+  gap: 8px;
+  margin-left: 10px;
+  margin-top: 20px;
+  flex-wrap: wrap;      /* 👉 Permite que los botones bajen a otra línea */
+}
+
+/* Opcional: mejorar tamaño en pantallas pequeñas */
+@media (max-width: 600px) {
+  .acciones button {
+    width: 100%;        /* 👉 Cada botón ocupa el ancho completo en móvil */
+  }
+}
+.menu {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr); /* 5 botones por fila */
+  gap: 10px; /* separación entre botones */
+  margin-bottom: 20px; /* separación con lo que está debajo */
+}
+
+.menu button {
+  padding: 12px 18px;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+}
+@media (max-width: 600px) {
+  .menu {
+    grid-template-columns: repeat(2, 1fr); /* 2 por fila en móvil */
+  }
 }
