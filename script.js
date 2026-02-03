@@ -49,28 +49,6 @@ function addFila(tablaId){
     tr.addEventListener('change',()=>calcEmbotellado(tr));
   }
 
-  /* INVENTARIO */
-  
-  else if(tablaId === 'tablaInventario'){
-  tr.innerHTML = `
-<td><input placeholder="Marca"></td>
-<td><input type="number" value="0"></td>
-<td><input class="etiq" type="number" value="0"></td>
-<td><input class="sin" type="number" value="0"></td>
-<td><input class="total" disabled value="0"></td>
-<td><input></td>
-<td><button onclick="eliminarFila(this)">🗑️</button></td>`;
-
-  // Listener para recalcular total al escribir
-  tr.querySelectorAll('.etiq, .sin').forEach(input => {
-    input.addEventListener('input', () => calcInventario(tr));
-  });
-
-  // Finalmente agregar fila al tbody
-  tbody.appendChild(tr);
-}
-
-  
 
   /* TIRILLAS DO */
   else if(tablaId === 'tablaTirillasDO'){
@@ -241,9 +219,33 @@ function calcEmbotellado(f){
 }
 
 function calcInventario(f){
-  const e = +f.querySelector('.etiq').value||0;
-  const s = +f.querySelector('.sin').value||0;
-  f.querySelector('.total').value = e + s;
+  // Inicializar acumuladores si no existen
+  if (!f.dataset.etiq) f.dataset.etiq = 0;
+  if (!f.dataset.sin)  f.dataset.sin  = 0;
+
+  // Entradas (según columnas)
+  const entradaEtiq = f.cells[2].querySelector('input'); // Entrada Etiquetado
+  const entradaSin  = f.cells[4].querySelector('input'); // Entrada Sin Etiquetar
+
+  // Acumular Etiquetado
+  if (entradaEtiq && entradaEtiq.value !== '') {
+    f.dataset.etiq = Number(f.dataset.etiq) + (Number(entradaEtiq.value) || 0);
+    entradaEtiq.value = '';
+  }
+
+  // Acumular Sin Etiquetar
+  if (entradaSin && entradaSin.value !== '') {
+    f.dataset.sin = Number(f.dataset.sin) + (Number(entradaSin.value) || 0);
+    entradaSin.value = '';
+  }
+
+  // Actualizar columnas
+  const acumuladoEtiq = Number(f.dataset.etiq) || 0;
+  const acumuladoSin  = Number(f.dataset.sin)  || 0;
+
+  f.querySelector('.etiq').value = acumuladoEtiq;
+  f.querySelector('.sin').value  = acumuladoSin;
+  f.querySelector('.total').value = acumuladoEtiq + acumuladoSin;
 }
 
 function acumularStock(input){
@@ -584,3 +586,138 @@ addFila = function(tablaId){
   if(tablaId === "tablaBotellas") generarSelectsBotellas(nuevaFila);
   if(tablaId === "tablaCorchos") generarSelectsCorchos(nuevaFila);
 };
+
+
+ /* ===========================
+   INVENTARIO + HISTÓRICO COMPLETO
+   =========================== */
+
+function inicializarInventario(){
+  const filas = document.querySelectorAll('#tablaInventario tbody tr');
+  filas.forEach(fila => configurarFilaInventario(fila));
+}
+
+// 🔹 Añadir fila nueva
+function addFilaInventario(){
+  const tbody = document.querySelector('#tablaInventario tbody');
+  const tr = document.createElement('tr');
+
+  tr.innerHTML = `
+<td><input placeholder="Marca"></td>
+<td><input type="number" value="0"></td>
+<td><input class="entrada-etiq" type="number" value="0"></td>
+<td><input class="etiq" type="number" value="0" disabled></td>
+<td><input class="entrada-sin" type="number" value="0"></td>
+<td><input class="sin" type="number" value="0" disabled></td>
+<td><input class="total" disabled value="0"></td>
+<td><input></td>
+<td><button class="btn-eliminar">🗑️</button></td>
+`;
+
+  tbody.appendChild(tr);
+  configurarFilaInventario(tr);
+}
+
+// 🔹 Configura fila (nueva o existente)
+function configurarFilaInventario(fila){
+  // Acumuladores propios
+  fila.dataset.etiq = Number(fila.dataset.etiq) || 0;
+  fila.dataset.sin  = Number(fila.dataset.sin) || 0;
+
+  const entradaEtiq = fila.querySelector('.entrada-etiq');
+  const entradaSin  = fila.querySelector('.entrada-sin');
+  const btnEliminar = fila.querySelector('.btn-eliminar');
+
+  // Registrar entradas etiquetadas
+  entradaEtiq.addEventListener('change', e => {
+    const valor = Number(e.target.value) || 0;
+    if(valor <= 0) return;
+    fila.dataset.etiq = Number(fila.dataset.etiq) + valor;
+    e.target.value = '';
+    actualizarFilaInventario(fila);
+    registrarHistorico(fila, 'etiq', valor);
+  });
+
+  // Registrar entradas sin etiquetar
+  entradaSin.addEventListener('change', e => {
+    const valor = Number(e.target.value) || 0;
+    if(valor <= 0) return;
+    fila.dataset.sin = Number(fila.dataset.sin) + valor;
+    e.target.value = '';
+    actualizarFilaInventario(fila);
+    registrarHistorico(fila, 'sin', valor);
+  });
+
+  // Actualizar título histórico al cambiar marca o año
+  fila.cells[0].querySelector('input').addEventListener('input', ()=>actualizarTituloHistorico(fila));
+  fila.cells[1].querySelector('input').addEventListener('input', ()=>actualizarTituloHistorico(fila));
+
+  // Eliminar fila + histórico
+  if(btnEliminar){
+    btnEliminar.addEventListener('click', () => {
+      eliminarHistorico(fila);
+      fila.remove();
+    });
+  }
+}
+
+// 🔹 Actualiza totales de la fila
+function actualizarFilaInventario(fila){
+  fila.querySelector('.etiq').value = Number(fila.dataset.etiq) || 0;
+  fila.querySelector('.sin').value  = Number(fila.dataset.sin) || 0;
+  fila.querySelector('.total').value = (Number(fila.dataset.etiq) + Number(fila.dataset.sin)) || 0;
+}
+
+// 🔹 Registrar entradas en histórico
+function registrarHistorico(fila, tipo, cantidad){
+  if(!cantidad || cantidad <= 0) return;
+  const cont = document.getElementById('historicoInventario');
+  if(!cont) return;
+
+  // Usamos un ID único por fila basado en timestamp + random si no tiene aún
+  if(!fila.dataset.histId) fila.dataset.histId = 'fila_' + Date.now() + '_' + Math.floor(Math.random()*1000);
+
+  let bloque = cont.querySelector(`[data-id="${fila.dataset.histId}"]`);
+
+  const marca = fila.cells[0].querySelector('input').value || "Sin marca";
+  const anada = fila.cells[1].querySelector('input').value || "—";
+
+  if(!bloque){
+    bloque = document.createElement('div');
+    bloque.className = 'hist-item';
+    bloque.dataset.id = fila.dataset.histId;
+    bloque.innerHTML = `
+      <div class="hist-titulo">🍷 ${marca} — ${anada}</div>
+      <div class="hist-linea etiq">Etiquetado:</div>
+      <div class="hist-linea sin">Sin etiquetar:</div>
+    `;
+    cont.appendChild(bloque);
+  }
+
+  const linea = bloque.querySelector(`.${tipo}`);
+  linea.innerHTML += ` +${cantidad}`;
+}
+
+// 🔹 Actualiza título del histórico al cambiar marca o añada
+function actualizarTituloHistorico(fila){
+  const cont = document.getElementById('historicoInventario');
+  if(!cont) return;
+  const bloque = cont.querySelector(`[data-id="${fila.dataset.histId}"]`);
+  if(!bloque) return;
+
+  const marca = fila.cells[0].querySelector('input').value || "Sin marca";
+  const anada = fila.cells[1].querySelector('input').value || "—";
+
+  bloque.querySelector('.hist-titulo').innerHTML = `🍷 ${marca} — ${anada}`;
+}
+
+// 🔹 Eliminar histórico asociado a una fila
+function eliminarHistorico(fila){
+  const cont = document.getElementById('historicoInventario');
+  if(!cont) return;
+  const bloque = cont.querySelector(`[data-id="${fila.dataset.histId}"]`);
+  if(bloque) bloque.remove();
+}
+
+// 🔹 Inicializar inventario al cargar la página
+document.addEventListener('DOMContentLoaded', inicializarInventario);

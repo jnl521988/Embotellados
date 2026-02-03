@@ -92,17 +92,22 @@
 <!-- Inventario -->
 <section id="inventario" class="pagina">
 <h2>Inventario</h2>
-<button class="add-btn" onclick="addFila('tablaInventario')">➕ Añadir fila</button>
+<button class="add-btn" onclick="addFilaInventario()">➕ Añadir fila</button>
+
 <table id="tablaInventario">
 <thead>
 <tr>
-<th>Marca</th><th>Añada</th><th>Etiquetado</th><th>Sin Etiquetar</th><th>Total</th><th>Observaciones</th><th>Eliminar</th>
+<th>Marca</th><th>Añada</th><th>Entrada</th><th>Etiquetado</th><th>Entrada</th><th>Sin Etiquetar</th><th>Total</th><th>Observaciones</th><th>Eliminar</th>
 </tr>
 </thead>
 <tbody>
   <!-- Las filas iniciales se generarán con JS -->
 </tbody>
 </table>
+<h3>📜 Histórico de movimientos</h3>
+<div id="historicoInventario"></div>
+
+
 </section>
 
 <script>
@@ -118,7 +123,9 @@ document.addEventListener('DOMContentLoaded', () => {
       tr.innerHTML = `
         <td><input placeholder="Marca"></td>
         <td><input type="number"></td>
+        <td><input class= "Entrada" type="number"></td>
         <td><input class="etiq" type="number"></td>
+        <td><input class= "Entrada" type="number"></td>
         <td><input class="sin" type="number"></td>
         <td><input class="total" disabled></td>
         <td><input></td>
