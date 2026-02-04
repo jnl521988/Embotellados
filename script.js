@@ -317,43 +317,56 @@ function calcTirillasDO(fila){
 }
 
 /**********************
- * PRODUCTOS
+ * PRODUCTOS CON FOTO
  **********************/
 let productos = [];
+
+// 🚀 Cargar productos al iniciar
+document.addEventListener('DOMContentLoaded', () => {
+  const guardados = JSON.parse(localStorage.getItem('productos'));
+  if(guardados) productos = guardados;
+  renderizarProductos();
+  actualizarSelectProductos();
+});
 
 // Añadir producto
 function añadirProducto() {
   const nombre = document.getElementById('prod-nombre').value.trim();
-  const tipo = document.getElementById('prod-tipo').value.trim();
-  const descripcion = document.getElementById('prod-desc').value.trim();
+  const desc = document.getElementById('prod-desc').value.trim();
   const añada = document.getElementById('prod-añada').value.trim();
+  const fotoInput = document.getElementById('prod-foto');
 
-  if(!nombre) {
-    alert('El nombre del producto es obligatorio');
-    return;
-  }
+  if(!nombre) { alert('El nombre del producto es obligatorio'); return; }
 
-  const producto = {
-    id: Date.now(), // ID único
-    nombre,
-    tipo,
-    descripcion,
-    añada
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const producto = {
+      id: Date.now(),
+      nombre,
+      desc,
+      añada,
+      foto: e.target.result || '' // base64
+    };
+    productos.push(producto);
+    guardarProductos();
+    renderizarProductos();
+    limpiarFormulario();
+    actualizarSelectProductos();
   };
 
-  productos.push(producto);
-  guardarProductos();
-  renderizarProductos();
-  limpiarFormulario();
-  actualizarSelectProductos(); // actualizar selects al añadir
+  if(fotoInput.files[0]) {
+    reader.readAsDataURL(fotoInput.files[0]);
+  } else {
+    reader.onload({target:{result:''}}); // sin foto
+  }
 }
 
 // Limpiar formulario
 function limpiarFormulario() {
   document.getElementById('prod-nombre').value = '';
-  document.getElementById('prod-tipo').value = '';
   document.getElementById('prod-desc').value = '';
   document.getElementById('prod-añada').value = '';
+  document.getElementById('prod-foto').value = '';
 }
 
 // Renderizar tabla de productos
@@ -365,12 +378,12 @@ function renderizarProductos() {
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${prod.nombre}</td>
-      <td>${prod.tipo}</td>
-      <td>${prod.descripcion}</td>
+      <td><img src="${prod.foto}" style="width:50px; height:50px; object-fit:contain;"></td>
+      <td>${prod.desc}</td>
       <td>${prod.añada}</td>
-      <td class="stock-prod">0</td>   <!-- 🆕 Celda de stock -->
+      <td class="stock-prod">0</td>
       <td>
-        <button onclick="editarProducto(${prod.id})">✏️ Editar</button>
+        <button onclick="abrirModalEditar(${prod.id})">✏️ Editar</button>
         <button onclick="eliminarProducto(${prod.id})">🗑️ Eliminar</button>
       </td>
     `;
@@ -384,69 +397,89 @@ function eliminarProducto(id) {
   productos = productos.filter(p => p.id !== id);
   guardarProductos();
   renderizarProductos();
-  actualizarSelectProductos(); // actualizar selects al eliminar
+  actualizarSelectProductos();
 }
 
-// Editar producto
-function editarProducto(id) {
+// Abrir modal de edición
+let productoEditandoId = null;
+function abrirModalEditar(id) {
+  productoEditandoId = id;
   const prod = productos.find(p => p.id === id);
   if(!prod) return;
 
-  const nuevoNombre = prompt('Nombre:', prod.nombre);
-  if(nuevoNombre !== null) prod.nombre = nuevoNombre.trim();
+  document.getElementById('edit-nombre').value = prod.nombre;
+  document.getElementById('edit-desc').value = prod.desc;
+  document.getElementById('edit-añada').value = prod.añada;
+  document.getElementById('preview-foto').src = prod.foto || '';
+  document.getElementById('edit-foto').value = '';
 
-  const nuevoTipo = prompt('Tipo:', prod.tipo);
-  if(nuevoTipo !== null) prod.tipo = nuevoTipo.trim();
-
-  const nuevaDesc = prompt('Descripción:', prod.descripcion);
-  if(nuevaDesc !== null) prod.descripcion = nuevaDesc.trim();
-
-  const nuevaAñada = prompt('Añada:', prod.añada);
-  if(nuevaAñada !== null) prod.añada = nuevaAñada.trim();
-
-  guardarProductos();
-  renderizarProductos();
-  actualizarSelectProductos(); // actualizar selects al editar
+  document.getElementById('modalEditarProducto').style.display = 'flex';
 }
 
-// Guardar productos en localStorage
+// Cerrar modal
+function cerrarModalProducto() {
+  document.getElementById('modalEditarProducto').style.display = 'none';
+  productoEditandoId = null;
+}
+
+// Guardar edición
+function guardarEdicionProducto() {
+  const nombre = document.getElementById('edit-nombre').value.trim();
+  const desc = document.getElementById('edit-desc').value.trim();
+  const añada = document.getElementById('edit-añada').value.trim();
+  const fotoInput = document.getElementById('edit-foto');
+
+  if(!nombre) { alert('El nombre es obligatorio'); return; }
+
+  const prod = productos.find(p => p.id === productoEditandoId);
+  if(!prod) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    prod.nombre = nombre;
+    prod.desc = desc;
+    prod.añada = añada;
+    if(e.target.result) prod.foto = e.target.result;
+
+    guardarProductos();
+    renderizarProductos();
+    actualizarSelectProductos();
+    cerrarModalProducto();
+  };
+
+  if(fotoInput.files[0]) {
+    reader.readAsDataURL(fotoInput.files[0]);
+  } else {
+    reader.onload({target:{result:''}});
+  }
+}
+
+// Guardar en localStorage
 function guardarProductos() {
   localStorage.setItem('productos', JSON.stringify(productos));
 }
 
-// Cargar productos de localStorage al iniciar
-document.addEventListener('DOMContentLoaded', () => {
-  const guardados = JSON.parse(localStorage.getItem('productos'));
-  if(guardados) productos = guardados;
-  renderizarProductos();
-  actualizarSelectProductos();
-});
 /********************************************
  * 📦 STOCK GLOBAL POR PRODUCTO
  ********************************************/
 function obtenerStockProducto(nombreProd){
   let total = 0;
-
   const tablas = [
     { id: "tablaEtiquetas", colStock: 6 },
     { id: "tablaCapsulas",  colStock: 5 },
     { id: "tablaCajas",     colStock: 5 }
   ];
-
   tablas.forEach(obj => {
     const tabla = document.getElementById(obj.id);
     if(!tabla) return;
-
     tabla.querySelectorAll("tbody tr").forEach(fila => {
       const select = fila.querySelector("td.producto select");
       const stockInput = fila.children[obj.colStock].querySelector("input");
-
       if(select && stockInput && select.value === nombreProd){
         total += parseInt(stockInput.value) || 0;
       }
     });
   });
-
   return total;
 }
 
@@ -456,9 +489,8 @@ function obtenerStockProducto(nombreProd){
 function actualizarStocksEnProductos(){
   const tabla = document.getElementById("tablaProductos");
   if(!tabla) return;
-
   tabla.querySelectorAll("tbody tr").forEach(fila => {
-    const nombre = fila.children[0].textContent.trim(); // columna NOMBRE
+    const nombre = fila.children[0].textContent.trim();
     const celdaStock = fila.querySelector(".stock-prod");
     if(celdaStock) celdaStock.textContent = obtenerStockProducto(nombre);
   });
@@ -475,8 +507,26 @@ function actualizarStocksEnProductos(){
   }
 });
 
-// 🚀 Al cargar la página
-document.addEventListener("DOMContentLoaded", actualizarStocksEnProductos);
+// Actualiza los selects de productos
+function actualizarSelectProductos() {
+  const listaProductos = productos.map(p => p.nombre);
+  ['tablaEtiquetas', 'tablaCapsulas', 'tablaCajas'].forEach(tablaId => {
+    const tabla = document.getElementById(tablaId);
+    if (!tabla) return;
+    tabla.querySelectorAll('tbody tr').forEach(tr => {
+      const celda = tr.querySelector('td.producto');
+      if (!celda) return;
+      const valorActual = celda.querySelector('select')?.value || '';
+      const select = document.createElement('select');
+      select.innerHTML = `<option value="">--Seleccione--</option>` +
+                         listaProductos.map(p => `<option value="${p}">${p}</option>`).join('');
+      if (valorActual) select.value = valorActual;
+      celda.innerHTML = '';
+      celda.appendChild(select);
+    });
+  });
+}
+
 
 /**********************
  * PRODUCTOS EN SELECT
@@ -588,136 +638,161 @@ addFila = function(tablaId){
 };
 
 
- /* ===========================
-   INVENTARIO + HISTÓRICO COMPLETO
-   =========================== */
+ /***********************
+ * INVENTARIO + HISTÓRICO PRO
+ ***********************/
 
-function inicializarInventario(){
-  const filas = document.querySelectorAll('#tablaInventario tbody tr');
-  filas.forEach(fila => configurarFilaInventario(fila));
-}
+const marcasVino = ["24 Mozas","Madremia","Abracadabra","Platón","Loquillo Tinto","Encomienda de la Vega","Loquillo Rosado","El Principito","Vocablos","MG 24 Mozas","MG Madremia","MG Abracadabra"];
 
-// 🔹 Añadir fila nueva
 function addFilaInventario(){
   const tbody = document.querySelector('#tablaInventario tbody');
   const tr = document.createElement('tr');
 
+  tr.dataset.histId = "hist_" + Date.now() + Math.random();
+  tr.dataset.etiq = 0;
+  tr.dataset.sin = 0;
+
   tr.innerHTML = `
-<td><input placeholder="Marca"></td>
-<td><input type="number" value="0"></td>
-<td><input class="entrada-etiq" type="number" value="0"></td>
-<td><input class="etiq" type="number" value="0" disabled></td>
-<td><input class="entrada-sin" type="number" value="0"></td>
-<td><input class="sin" type="number" value="0" disabled></td>
-<td><input class="total" disabled value="0"></td>
+<td><input type="checkbox" class="selFila"></td>
+<td>${crearSelectMarcas()}</td>
+<td><input type="number" placeholder="Año"></td>
+<td><input class="entrada-etiq" type="number"></td>
+<td><input class="etiq" disabled></td>
+<td><input class="entrada-sin" type="number"></td>
+<td><input class="sin" disabled></td>
+<td><input class="total" disabled></td>
 <td><input></td>
-<td><button class="btn-eliminar">🗑️</button></td>
-`;
+<td><button onclick="eliminarFilaInventario(this)">🗑️</button></td>`;
 
   tbody.appendChild(tr);
-  configurarFilaInventario(tr);
+  activarEventosFila(tr);
 }
 
-// 🔹 Configura fila (nueva o existente)
-function configurarFilaInventario(fila){
-  // Acumuladores propios
-  fila.dataset.etiq = Number(fila.dataset.etiq) || 0;
-  fila.dataset.sin  = Number(fila.dataset.sin) || 0;
+function crearSelectMarcas(){
+  return `<select class="marca-select">
+    <option value="">--Marca--</option>
+    ${marcasVino.map(m=>`<option>${m}</option>`).join("")}
+  </select>`;
+}
 
-  const entradaEtiq = fila.querySelector('.entrada-etiq');
-  const entradaSin  = fila.querySelector('.entrada-sin');
-  const btnEliminar = fila.querySelector('.btn-eliminar');
+/******** EVENTOS FILA ********/
+function activarEventosFila(tr){
 
-  // Registrar entradas etiquetadas
-  entradaEtiq.addEventListener('change', e => {
-    const valor = Number(e.target.value) || 0;
-    if(valor <= 0) return;
-    fila.dataset.etiq = Number(fila.dataset.etiq) + valor;
-    e.target.value = '';
-    actualizarFilaInventario(fila);
-    registrarHistorico(fila, 'etiq', valor);
+  tr.querySelector('.entrada-etiq').addEventListener('change', e=>{
+    const val = Number(e.target.value)||0;
+    if(val<=0) return;
+    tr.dataset.etiq = Number(tr.dataset.etiq)+val;
+    e.target.value="";
+    actualizarFilaInventario(tr);
+    registrarHistorico(tr,'etiq',val,false);
   });
 
-  // Registrar entradas sin etiquetar
-  entradaSin.addEventListener('change', e => {
-    const valor = Number(e.target.value) || 0;
-    if(valor <= 0) return;
-    fila.dataset.sin = Number(fila.dataset.sin) + valor;
-    e.target.value = '';
-    actualizarFilaInventario(fila);
-    registrarHistorico(fila, 'sin', valor);
+  tr.querySelector('.entrada-sin').addEventListener('change', e=>{
+    const val = Number(e.target.value)||0;
+    if(val<=0) return;
+    tr.dataset.sin = Number(tr.dataset.sin)+val;
+    e.target.value="";
+    actualizarFilaInventario(tr);
+    registrarHistorico(tr,'sin',val,false);
   });
 
-  // Actualizar título histórico al cambiar marca o año
-  fila.cells[0].querySelector('input').addEventListener('input', ()=>actualizarTituloHistorico(fila));
-  fila.cells[1].querySelector('input').addEventListener('input', ()=>actualizarTituloHistorico(fila));
-
-  // Eliminar fila + histórico
-  if(btnEliminar){
-    btnEliminar.addEventListener('click', () => {
-      eliminarHistorico(fila);
-      fila.remove();
-    });
-  }
+  tr.querySelector('.marca-select').addEventListener('change',()=>actualizarTituloHistorico(tr));
+  tr.cells[2].querySelector('input').addEventListener('input',()=>actualizarTituloHistorico(tr));
 }
 
-// 🔹 Actualiza totales de la fila
-function actualizarFilaInventario(fila){
-  fila.querySelector('.etiq').value = Number(fila.dataset.etiq) || 0;
-  fila.querySelector('.sin').value  = Number(fila.dataset.sin) || 0;
-  fila.querySelector('.total').value = (Number(fila.dataset.etiq) + Number(fila.dataset.sin)) || 0;
+/******** ACTUALIZA TABLA ********/
+function actualizarFilaInventario(f){
+  const etiq = Number(f.dataset.etiq);
+  const sin  = Number(f.dataset.sin);
+  f.querySelector('.etiq').value = etiq;
+  f.querySelector('.sin').value  = sin;
+  f.querySelector('.total').value = etiq + sin;
 }
 
-// 🔹 Registrar entradas en histórico
-function registrarHistorico(fila, tipo, cantidad){
-  if(!cantidad || cantidad <= 0) return;
+/******** HISTÓRICO ********/
+function registrarHistorico(fila,tipo,cantidad,esAnterior){
   const cont = document.getElementById('historicoInventario');
-  if(!cont) return;
-
-  // Usamos un ID único por fila basado en timestamp + random si no tiene aún
-  if(!fila.dataset.histId) fila.dataset.histId = 'fila_' + Date.now() + '_' + Math.floor(Math.random()*1000);
-
   let bloque = cont.querySelector(`[data-id="${fila.dataset.histId}"]`);
-
-  const marca = fila.cells[0].querySelector('input').value || "Sin marca";
-  const anada = fila.cells[1].querySelector('input').value || "—";
 
   if(!bloque){
     bloque = document.createElement('div');
-    bloque.className = 'hist-item';
-    bloque.dataset.id = fila.dataset.histId;
-    bloque.innerHTML = `
-      <div class="hist-titulo">🍷 ${marca} — ${anada}</div>
-      <div class="hist-linea etiq">Etiquetado:</div>
-      <div class="hist-linea sin">Sin etiquetar:</div>
-    `;
+    bloque.className="hist-item";
+    bloque.dataset.id=fila.dataset.histId;
+    bloque.innerHTML=`
+      <div class="hist-titulo"></div>
+      <div class="hist-linea etiq"></div>
+      <div class="hist-linea sin"></div>`;
     cont.appendChild(bloque);
   }
 
+  actualizarTituloHistorico(fila);
+
   const linea = bloque.querySelector(`.${tipo}`);
-  linea.innerHTML += ` +${cantidad}`;
+  const listaActual = linea.dataset.actual ? linea.dataset.actual.split(",") : [];
+  const listaPrev   = linea.dataset.prev ? linea.dataset.prev.split(",") : [];
+
+  if(esAnterior) listaPrev.push(cantidad);
+  else listaActual.push(cantidad);
+
+  linea.dataset.actual = listaActual.join(",");
+  linea.dataset.prev   = listaPrev.join(",");
+
+  pintarLineaHistorico(linea,tipo);
 }
 
-// 🔹 Actualiza título del histórico al cambiar marca o añada
+function pintarLineaHistorico(linea,tipo){
+  const actuales = linea.dataset.actual ? linea.dataset.actual.split(",").filter(Boolean) : [];
+  const previos  = linea.dataset.prev ? linea.dataset.prev.split(",").filter(Boolean) : [];
+
+  let texto = (tipo==="etiq"?"Etiquetado: ":"Sin etiquetar: ");
+  if(actuales.length) texto += actuales.join(", ");
+  if(previos.length) texto += ` (${previos.join(", ")})`;
+
+  linea.textContent = texto;
+}
+
 function actualizarTituloHistorico(fila){
-  const cont = document.getElementById('historicoInventario');
-  if(!cont) return;
-  const bloque = cont.querySelector(`[data-id="${fila.dataset.histId}"]`);
+  const bloque = document.querySelector(`[data-id="${fila.dataset.histId}"]`);
   if(!bloque) return;
-
-  const marca = fila.cells[0].querySelector('input').value || "Sin marca";
-  const anada = fila.cells[1].querySelector('input').value || "—";
-
-  bloque.querySelector('.hist-titulo').innerHTML = `🍷 ${marca} — ${anada}`;
+  const marca = fila.querySelector('.marca-select').value || "Sin marca";
+  const anada = fila.cells[2].querySelector('input').value || "—";
+  bloque.querySelector('.hist-titulo').textContent = `🍷 ${marca} — ${anada}`;
 }
 
-// 🔹 Eliminar histórico asociado a una fila
-function eliminarHistorico(fila){
-  const cont = document.getElementById('historicoInventario');
-  if(!cont) return;
-  const bloque = cont.querySelector(`[data-id="${fila.dataset.histId}"]`);
+/******** RESET ********/
+function resetFilasInventario(){
+  document.querySelectorAll('#tablaInventario tbody tr').forEach(tr=>{
+    if(!tr.querySelector('.selFila').checked) return;
+
+    const bloque = document.querySelector(`[data-id="${tr.dataset.histId}"]`);
+    if(bloque){
+      ["etiq","sin"].forEach(tipo=>{
+        const linea = bloque.querySelector(`.${tipo}`);
+        if(!linea.dataset.actual) return;
+        linea.dataset.prev = (linea.dataset.prev?linea.dataset.prev+",":"")+linea.dataset.actual;
+        linea.dataset.actual="";
+        pintarLineaHistorico(linea,tipo);
+      });
+    }
+
+    tr.dataset.etiq=0;
+    tr.dataset.sin=0;
+    actualizarFilaInventario(tr);
+    tr.querySelector('.selFila').checked=false;
+  });
+}
+
+/******** ELIMINAR ********/
+function eliminarFilaInventario(btn){
+  const tr = btn.closest('tr');
+  const bloque = document.querySelector(`[data-id="${tr.dataset.histId}"]`);
   if(bloque) bloque.remove();
+  tr.remove();
 }
 
-// 🔹 Inicializar inventario al cargar la página
-document.addEventListener('DOMContentLoaded', inicializarInventario);
+/******** SELECT ALL ********/
+document.addEventListener("change",e=>{
+  if(e.target.id==="selectAllInv"){
+    document.querySelectorAll('.selFila').forEach(c=>c.checked=e.target.checked);
+  }
+});

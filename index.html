@@ -92,49 +92,35 @@
 <!-- Inventario -->
 <section id="inventario" class="pagina">
 <h2>Inventario</h2>
+
 <button class="add-btn" onclick="addFilaInventario()">➕ Añadir fila</button>
+<button class="reset-btn" onclick="resetFilasInventario()">🔄 Reset seleccionadas</button>
 
 <table id="tablaInventario">
 <thead>
 <tr>
-<th>Marca</th><th>Añada</th><th>Entrada</th><th>Etiquetado</th><th>Entrada</th><th>Sin Etiquetar</th><th>Total</th><th>Observaciones</th><th>Eliminar</th>
+<th><input type="checkbox" id="selectAllInv"></th>
+<th>Marca</th>
+<th>Añada</th>
+<th>Entrada Etiq.</th>
+<th>Etiquetado</th>
+<th>Entrada Sin</th>
+<th>Sin Etiquetar</th>
+<th>Total</th>
+<th>Observaciones</th>
+<th>Eliminar</th>
 </tr>
 </thead>
 <tbody>
-  <!-- Las filas iniciales se generarán con JS -->
+<!-- VACÍO A PROPÓSITO -->
 </tbody>
 </table>
+
 <h3>📜 Histórico de movimientos</h3>
 <div id="historicoInventario"></div>
 
-
 </section>
 
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  const marcas = ["24 Mozas","Madremia","Abracadabra","Platón","Loquillo Tinto","Encomienda de la Vega","Loquillo Rosado","El Principito","Vocablos","MG 24 Mozas","MG Madremia","MG Abracadabra"];
-  const tbodyInv = document.getElementById('tablaInventario').querySelector('tbody');
-
-  // Crear filas iniciales con marcas
-  marcas.forEach(marca => {
-    for (let i = 0; i < 2; i++) {
-      const tr = document.createElement('tr');
-      tr.addEventListener('change', ()=>calcInventario(tr));
-      tr.innerHTML = `
-        <td><input placeholder="Marca"></td>
-        <td><input type="number"></td>
-        <td><input class= "Entrada" type="number"></td>
-        <td><input class="etiq" type="number"></td>
-        <td><input class= "Entrada" type="number"></td>
-        <td><input class="sin" type="number"></td>
-        <td><input class="total" disabled></td>
-        <td><input></td>
-        <td><button onclick="eliminarFila(this)">🗑️</button></td>`;
-      tbodyInv.appendChild(tr);
-    }
-  });
-});
-</script>
 
 <!-- Botellas -->
 <section id="botellas" class="pagina">
@@ -309,7 +295,7 @@ document.addEventListener('DOMContentLoaded', () => {
   <!-- Panel de creación de producto -->
   <div class="panel-productos">
     <input type="text" id="prod-nombre" placeholder="Nombre">
-    <input type="text" id="prod-tipo" placeholder="Tipo">
+    <input type="file" id="prod-foto" accept="image/*">
     <input type="text" id="prod-desc" placeholder="Descripción">
     <input type="number" id="prod-añada" placeholder="Añada">
     <button onclick="añadirProducto()">Añadir Producto</button>
@@ -320,7 +306,7 @@ document.addEventListener('DOMContentLoaded', () => {
     <thead>
       <tr>
         <th>Nombre</th>
-        <th>Tipo</th>
+        <th>Foto</th>
         <th>Descripción</th>
         <th>Añada</th>
         <th>Stock</th>
@@ -332,7 +318,24 @@ document.addEventListener('DOMContentLoaded', () => {
       <td class="stock-prod">0</td>
     </tbody>
   </table>
+
+  <!-- Modal de edición (coloca aquí) -->
+  <div id="modalEditarProducto" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; 
+      background: rgba(0,0,0,0.5); justify-content:center; align-items:center;">
+    <div style="background:#fff; padding:20px; border-radius:8px; width:300px; position:relative;">
+      <h3>Editar Producto</h3>
+      <input type="text" id="edit-nombre" placeholder="Nombre"><br><br>
+      <input type="text" id="edit-desc" placeholder="Descripción"><br><br>
+      <input type="number" id="edit-añada" placeholder="Añada"><br><br>
+      <input type="file" id="edit-foto" accept="image/*"><br><br>
+      <img id="preview-foto" src="" style="width:100%; max-height:150px; object-fit:contain;"><br><br>
+      <button onclick="guardarEdicionProducto()">Guardar</button>
+      <button onclick="cerrarModalProducto()">Cancelar</button>
+    </div>
+  </div>
+
 </section>
+
 
 <script src="script.js"></script>
 </div>

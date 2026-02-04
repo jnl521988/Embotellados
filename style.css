@@ -125,3 +125,20 @@ button:hover { opacity:0.8; }
 .hist-linea{
   margin-left:10px;
 }
+.reset-btn{
+  margin-left:10px;
+  background:#dc3545;
+  color:white;
+  border:none;
+  padding:5px 10px;
+  border-radius:4px;
+  cursor:pointer;
+}
+.reset-btn:hover{ background:#b52a37; }
+.foto-prod{
+  width:60px;
+  height:60px;
+  object-fit:cover;
+  border-radius:6px;
+  border:1px solid #ccc;
+}
