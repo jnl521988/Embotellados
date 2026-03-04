@@ -295,44 +295,56 @@
   <!-- Panel de creación de producto -->
   <div class="panel-productos">
     <input type="text" id="prod-nombre" placeholder="Nombre">
+     <select id="prod-clase">
+    <option value="">Clase</option>
+    <option value="capsulas">Cápsulas</option>
+    <option value="etiquetas">Etiquetas</option>
+    <option value="cajas">Cajas</option>
+  </select>
     <input type="file" id="prod-foto" accept="image/*">
     <input type="text" id="prod-desc" placeholder="Descripción">
     <input type="number" id="prod-añada" placeholder="Añada">
     <button onclick="añadirProducto()">Añadir Producto</button>
   </div>
+  <h3>📦 Cápsulas</h3>
+<table id="tablaCapsulasProd">
+<thead><tr><th>Nombre</th><th>Foto</th><th>Descripción</th><th>Añada</th><th>Stock</th><th>Acciones</th></tr></thead>
+<tbody></tbody>
+</table>
 
-  <!-- Tabla de productos -->
-  <table id="tablaProductos">
-    <thead>
-      <tr>
-        <th>Nombre</th>
-        <th>Foto</th>
-        <th>Descripción</th>
-        <th>Añada</th>
-        <th>Stock</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- Los productos se generan dinámicamente con JS -->
-      <td class="stock-prod">0</td>
-    </tbody>
-  </table>
+<h3>🏷 Etiquetas</h3>
+<table id="tablaEtiquetasProd">
+<thead><tr><th>Nombre</th><th>Foto</th><th>Descripción</th><th>Añada</th><th>Stock</th><th>Acciones</th></tr></thead>
+<tbody></tbody>
+</table>
+
+<h3>📦 Cajas</h3>
+<table id="tablaCajasProd">
+<thead><tr><th>Nombre</th><th>Foto</th><th>Descripción</th><th>Añada</th><th>Stock</th><th>Acciones</th></tr></thead>
+<tbody></tbody>
+</table>
+
 
   <!-- Modal de edición (coloca aquí) -->
-  <div id="modalEditarProducto" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; 
-      background: rgba(0,0,0,0.5); justify-content:center; align-items:center;">
-    <div style="background:#fff; padding:20px; border-radius:8px; width:300px; position:relative;">
-      <h3>Editar Producto</h3>
-      <input type="text" id="edit-nombre" placeholder="Nombre"><br><br>
-      <input type="text" id="edit-desc" placeholder="Descripción"><br><br>
-      <input type="number" id="edit-añada" placeholder="Añada"><br><br>
-      <input type="file" id="edit-foto" accept="image/*"><br><br>
-      <img id="preview-foto" src="" style="width:100%; max-height:150px; object-fit:contain;"><br><br>
-      <button onclick="guardarEdicionProducto()">Guardar</button>
-      <button onclick="cerrarModalProducto()">Cancelar</button>
+<div id="modalEditarProducto" class="modal-overlay">
+
+  <div class="modal-contenido">
+    <h3>✏ Editar Producto</h3>
+
+    <input type="text" id="edit-nombre" placeholder="Nombre"><br>
+    <input type="text" id="edit-desc" placeholder="Descripción"><br>
+    <input type="number" id="edit-añada" placeholder="Añada"><br>
+    <input type="file" id="edit-foto" accept="image/*"><br>
+
+    <img id="preview-foto" src="" class="preview-img"><br>
+
+    <div class="modal-botones">
+      <button onclick="guardarEdicionProducto()" class="btn-guardar">Guardar</button>
+      <button onclick="cerrarModalProducto()" class="btn-cancelar">Cancelar</button>
     </div>
   </div>
+
+</div>
 
 </section>
 

@@ -99,9 +99,17 @@ function addFila(tablaId){
  * ELIMINAR FILA
  **********************/
 function eliminarFila(btn){
-  btn.closest('tr').remove();
-}
 
+  const tr = btn.closest('tr');
+  const tbody = tr.parentElement;
+
+  if(tbody.querySelectorAll('tr').length === 1){
+    alert("Debe existir al menos una fila");
+    return;
+  }
+
+  tr.remove();
+}
 
 /**********************
  * GUARDAR / CARGAR
@@ -149,15 +157,68 @@ window.onload = ()=>{
 /**********************
  * EXPORTAR
  **********************/
-function exportarExcel(){
-  const tablaVisible = document.querySelector('.pagina[style*="display: block"] table');
-  if(!tablaVisible){ alert('No hay tabla visible para exportar'); return; }
+function exportarExcel() {
+  const paginaVisible = document.querySelector('.pagina[style*="display: block"]');
+  if (!paginaVisible) { 
+    alert('No hay tabla visible para exportar'); 
+    return; 
+  }
+
+  const wb = XLSX.utils.book_new();
+
+  // 📌 Página de productos con 3 tablas
+  if (paginaVisible.id === 'Productos') {
+    const tablas = [
+      { id: 'tablaCapsulasProd', titulo: 'Capsulas' },
+      { id: 'tablaEtiquetasProd', titulo: 'Etiquetas' },
+      { id: 'tablaCajasProd', titulo: 'Cajas' }
+    ];
+
+    tablas.forEach(t => {
+      const tabla = document.getElementById(t.id);
+      if (!tabla) return;
+
+      const datos = [];
+
+      // Cabecera
+      const headers = [];
+      tabla.querySelectorAll('thead th').forEach((th, i, arr) => {
+        if (i === arr.length - 1) return; // Saltar columna acciones
+        headers.push(th.textContent.trim());
+      });
+      datos.push(headers);
+
+      // Filas
+      tabla.querySelectorAll('tbody tr').forEach(tr => {
+        const fila = [];
+        tr.querySelectorAll('td').forEach((td, i, arr) => {
+          if (i === arr.length - 1) return; // Saltar columna acciones
+          const input = td.querySelector('input');
+          const select = td.querySelector('select');
+          const img = td.querySelector('img');
+          if (img) fila.push(''); // opcional: dejar vacío o poner texto
+          else fila.push(input ? input.value : (select ? select.value : td.textContent.trim()));
+        });
+        datos.push(fila);
+      });
+
+      const ws = XLSX.utils.aoa_to_sheet(datos);
+      XLSX.utils.book_append_sheet(wb, ws, t.titulo);
+    });
+
+    XLSX.writeFile(wb, 'Productos.xlsx');
+    return;
+  }
+
+  // 📌 Resto de páginas (comportamiento actual)
+  const tablaVisible = paginaVisible.querySelector('table');
+  if (!tablaVisible) { alert('No hay tabla visible para exportar'); return; }
 
   const datos = [];
-  tablaVisible.querySelectorAll('tr').forEach(tr=>{
+  tablaVisible.querySelectorAll('tr').forEach(tr => {
     const fila = [];
-    tr.querySelectorAll('td, th').forEach((td, i, arr)=>{
-      if(i===arr.length-1) return;
+    tr.querySelectorAll('td, th').forEach((td, i, arr) => {
+      if (i === arr.length - 1) return;
       const input = td.querySelector('input');
       const select = td.querySelector('select');
       fila.push(input ? input.value : (select ? select.value : td.textContent.trim()));
@@ -166,20 +227,78 @@ function exportarExcel(){
   });
 
   const ws = XLSX.utils.aoa_to_sheet(datos);
-  const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, tablaVisible.id);
-  XLSX.writeFile(wb, tablaVisible.id+'.xlsx');
+  XLSX.writeFile(wb, tablaVisible.id + '.xlsx');
 }
 
-function exportarPDF(){
-  const tablaVisible = document.querySelector('.pagina[style*="display: block"] table');
-  if(!tablaVisible){ alert('No hay tabla visible para exportar'); return; }
+function exportarPDF() {
+  // Detectar página visible
+  const paginaVisible = document.querySelector('.pagina[style*="display: block"]');
+  if (!paginaVisible) { alert('No hay tabla visible para exportar'); return; }
+
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF('l', 'pt');
+
+  // 📌 Página de productos con 3 tablas
+  if (paginaVisible.id === 'Productos') {
+    const tablas = [
+      { id: 'tablaCapsulasProd', titulo: '📦 Cápsulas' },
+      { id: 'tablaEtiquetasProd', titulo: '🏷 Etiquetas' },
+      { id: 'tablaCajasProd', titulo: '📦 Cajas' }
+    ];
+
+    tablas.forEach((t, index) => {
+      const tabla = document.getElementById(t.id);
+      if (!tabla) return;
+
+      if (index > 0) pdf.addPage(); // Nueva hoja para la 2ª y 3ª tabla
+
+      pdf.setFontSize(14);
+      pdf.text(t.titulo, 40, 30);
+
+      // Extraer datos de la tabla
+      const headers = [];
+      tabla.querySelectorAll('thead th').forEach((th, i, arr) => {
+        if (i === arr.length - 1) return; // saltar última columna acciones
+        headers.push(th.textContent.trim());
+      });
+
+      const body = [];
+      tabla.querySelectorAll('tbody tr').forEach(tr => {
+        const fila = [];
+        tr.querySelectorAll('td').forEach((td, i, arr) => {
+          if (i === arr.length - 1) return; // saltar columna acciones
+          const input = td.querySelector('input');
+          const select = td.querySelector('select');
+          const img = td.querySelector('img');
+          if (img) fila.push(''); // la imagen se puede omitir o poner texto placeholder
+          else fila.push(input ? input.value : (select ? select.value : td.textContent.trim()));
+        });
+        body.push(fila);
+      });
+
+      pdf.autoTable({ head: [headers], body: body, startY: 50, theme: 'grid', styles: { fontSize: 10 } });
+    });
+
+    pdf.save('Productos.pdf');
+    return;
+  }
+
+  // 📌 Resto de páginas (comportamiento actual)
+  const tablaVisible = paginaVisible.querySelector('table');
+  if (!tablaVisible) { alert('No hay tabla para exportar'); return; }
+
+  const headers = [];
+  tablaVisible.querySelectorAll('thead th').forEach((th, i, arr) => {
+    if (i === arr.length - 1) return;
+    headers.push(th.textContent.trim());
+  });
 
   const body = [];
-  tablaVisible.querySelectorAll('tbody tr').forEach(tr=>{
-    const fila=[];
-    tr.querySelectorAll('td').forEach((td,i,arr)=>{
-      if(i===arr.length-1) return;
+  tablaVisible.querySelectorAll('tbody tr').forEach(tr => {
+    const fila = [];
+    tr.querySelectorAll('td').forEach((td, i, arr) => {
+      if (i === arr.length - 1) return;
       const input = td.querySelector('input');
       const select = td.querySelector('select');
       fila.push(input ? input.value : (select ? select.value : td.textContent.trim()));
@@ -187,18 +306,11 @@ function exportarPDF(){
     body.push(fila);
   });
 
-  const headers=[];
-  tablaVisible.querySelectorAll('thead th').forEach((th,i,arr)=>{
-    if(i===arr.length-1) return;
-    headers.push(th.textContent.trim());
-  });
+  pdf.text(tablaVisible.id, 40, 30);
+  pdf.autoTable({ head: [headers], body: body, startY: 50, theme: 'grid', styles: { fontSize: 10 } });
+  pdf.save(tablaVisible.id + '.pdf');
+}
 
-  const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF('l','pt');
-  pdf.text(tablaVisible.id,40,30);
-  pdf.autoTable({ head:[headers], body:body, startY:50 });
-  pdf.save(tablaVisible.id+'.pdf');
-};
 
 
 /**********************
@@ -325,41 +437,15 @@ let productos = [];
 document.addEventListener('DOMContentLoaded', () => {
   const guardados = JSON.parse(localStorage.getItem('productos'));
   if(guardados) productos = guardados;
+
+  // 🔒 Forzar cierre del modal al iniciar
+  document.getElementById('modalEditarProducto').style.display = 'none';
+  productoEditandoId = null;
+
   renderizarProductos();
   actualizarSelectProductos();
 });
 
-// Añadir producto
-function añadirProducto() {
-  const nombre = document.getElementById('prod-nombre').value.trim();
-  const desc = document.getElementById('prod-desc').value.trim();
-  const añada = document.getElementById('prod-añada').value.trim();
-  const fotoInput = document.getElementById('prod-foto');
-
-  if(!nombre) { alert('El nombre del producto es obligatorio'); return; }
-
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const producto = {
-      id: Date.now(),
-      nombre,
-      desc,
-      añada,
-      foto: e.target.result || '' // base64
-    };
-    productos.push(producto);
-    guardarProductos();
-    renderizarProductos();
-    limpiarFormulario();
-    actualizarSelectProductos();
-  };
-
-  if(fotoInput.files[0]) {
-    reader.readAsDataURL(fotoInput.files[0]);
-  } else {
-    reader.onload({target:{result:''}}); // sin foto
-  }
-}
 
 // Limpiar formulario
 function limpiarFormulario() {
@@ -368,27 +454,72 @@ function limpiarFormulario() {
   document.getElementById('prod-añada').value = '';
   document.getElementById('prod-foto').value = '';
 }
-
-// Renderizar tabla de productos
 function renderizarProductos() {
-  const tbody = document.querySelector('#tablaProductos tbody');
-  tbody.innerHTML = '';
+
+  const capsBody = document.querySelector("#tablaCapsulasProd tbody");
+  const etiqBody = document.querySelector("#tablaEtiquetasProd tbody");
+  const cajasBody = document.querySelector("#tablaCajasProd tbody");
+
+  if(!capsBody || !etiqBody || !cajasBody) return;
+
+  capsBody.innerHTML = "";
+  etiqBody.innerHTML = "";
+  cajasBody.innerHTML = "";
 
   productos.forEach(prod => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${prod.nombre}</td>
-      <td><img src="${prod.foto}" style="width:50px; height:50px; object-fit:contain;"></td>
-      <td>${prod.desc}</td>
-      <td>${prod.añada}</td>
-      <td class="stock-prod">0</td>
-      <td>
-        <button onclick="abrirModalEditar(${prod.id})">✏️ Editar</button>
-        <button onclick="eliminarProducto(${prod.id})">🗑️ Eliminar</button>
-      </td>
+
+    const fila = `
+      <tr>
+        <td>${prod.nombre}</td>
+        <td>${prod.foto ? `<img src="${prod.foto}" width="50">` : ""}</td>
+        <td>${prod.descripcion || ""}</td>
+        <td>${prod.añada || ""}</td>
+        <td class="stock-prod">0</td>
+        <td>
+          <button onclick="abrirModalEditar(${prod.id})">Editar</button>
+          <button onclick="eliminarProducto(${prod.id})">Eliminar</button>
+        </td>
+      </tr>
     `;
-    tbody.appendChild(tr);
+
+    if(prod.clase === "capsulas") capsBody.innerHTML += fila;
+    if(prod.clase === "etiquetas") etiqBody.innerHTML += fila;
+    if(prod.clase === "cajas") cajasBody.innerHTML += fila;
+
   });
+
+  actualizarStocksEnProductos();
+}
+
+// Renderizar tabla de productos
+async function añadirProducto() {
+  const nombre = document.getElementById('prod-nombre').value.trim();
+  const clase = document.getElementById('prod-clase').value;
+  const descripcion = document.getElementById('prod-desc').value.trim();
+  const añada = document.getElementById('prod-añada').value.trim();
+  const fotoFile = document.getElementById('prod-foto').files[0];
+
+  if(!nombre || !clase){
+    alert("Nombre y clase obligatorios");
+    return;
+  }
+
+  const foto = fotoFile ? await leerImagen(fotoFile) : "";
+
+  const producto = {
+    id: Date.now(),
+    nombre,
+    clase,   // 🆕
+    descripcion,
+    añada,
+    foto
+  };
+
+  productos.push(producto);
+  guardarProductos();
+  renderizarProductos();
+  actualizarSelectProductos();
+  limpiarFormulario();
 }
 
 // Eliminar producto
@@ -399,6 +530,13 @@ function eliminarProducto(id) {
   renderizarProductos();
   actualizarSelectProductos();
 }
+function leerImagen(file) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = e => resolve(e.target.result);
+    reader.readAsDataURL(file);
+  });
+}
 
 // Abrir modal de edición
 let productoEditandoId = null;
@@ -408,7 +546,7 @@ function abrirModalEditar(id) {
   if(!prod) return;
 
   document.getElementById('edit-nombre').value = prod.nombre;
-  document.getElementById('edit-desc').value = prod.desc;
+ document.getElementById('edit-desc').value = prod.descripcion;
   document.getElementById('edit-añada').value = prod.añada;
   document.getElementById('preview-foto').src = prod.foto || '';
   document.getElementById('edit-foto').value = '';
@@ -437,7 +575,7 @@ function guardarEdicionProducto() {
   const reader = new FileReader();
   reader.onload = function(e) {
     prod.nombre = nombre;
-    prod.desc = desc;
+    prod.descripcion = desc;
     prod.añada = añada;
     if(e.target.result) prod.foto = e.target.result;
 
@@ -487,13 +625,31 @@ function obtenerStockProducto(nombreProd){
  * 🔄 ACTUALIZA STOCK EN TABLA PRODUCTOS
  ********************************************/
 function actualizarStocksEnProductos(){
-  const tabla = document.getElementById("tablaProductos");
-  if(!tabla) return;
-  tabla.querySelectorAll("tbody tr").forEach(fila => {
-    const nombre = fila.children[0].textContent.trim();
-    const celdaStock = fila.querySelector(".stock-prod");
-    if(celdaStock) celdaStock.textContent = obtenerStockProducto(nombre);
+
+  const tablasProductos = [
+    "tablaCapsulasProd",
+    "tablaEtiquetasProd",
+    "tablaCajasProd"
+  ];
+
+  tablasProductos.forEach(id => {
+
+    const tabla = document.getElementById(id);
+    if(!tabla) return;
+
+    tabla.querySelectorAll("tbody tr").forEach(fila => {
+
+      const nombre = fila.children[0]?.textContent.trim();
+      const celdaStock = fila.querySelector(".stock-prod");
+
+      if(!nombre || !celdaStock) return;
+
+      celdaStock.textContent = obtenerStockProducto(nombre);
+
+    });
+
   });
+
 }
 
 /********************************************
@@ -509,52 +665,38 @@ function actualizarStocksEnProductos(){
 
 // Actualiza los selects de productos
 function actualizarSelectProductos() {
-  const listaProductos = productos.map(p => p.nombre);
-  ['tablaEtiquetas', 'tablaCapsulas', 'tablaCajas'].forEach(tablaId => {
+
+  const mapas = {
+    tablaCapsulas: "capsulas",
+    tablaEtiquetas: "etiquetas",
+    tablaCajas: "cajas"
+  };
+
+  Object.keys(mapas).forEach(tablaId => {
+    const clase = mapas[tablaId];
     const tabla = document.getElementById(tablaId);
-    if (!tabla) return;
+    if(!tabla) return;
+
+    const lista = productos.filter(p => p.clase === clase);
+
     tabla.querySelectorAll('tbody tr').forEach(tr => {
       const celda = tr.querySelector('td.producto');
-      if (!celda) return;
-      const valorActual = celda.querySelector('select')?.value || '';
+      if(!celda) return;
+
+      const valorActual = celda.querySelector('select')?.value || "";
+
       const select = document.createElement('select');
-      select.innerHTML = `<option value="">--Seleccione--</option>` +
-                         listaProductos.map(p => `<option value="${p}">${p}</option>`).join('');
-      if (valorActual) select.value = valorActual;
+      select.innerHTML =
+        `<option value="">--Seleccione--</option>` +
+        lista.map(p => `<option value="${p.nombre}">${p.nombre}</option>`).join('');
+
+      select.value = valorActual;
       celda.innerHTML = '';
       celda.appendChild(select);
     });
   });
 }
 
-
-/**********************
- * PRODUCTOS EN SELECT
- **********************/
-function actualizarSelectProductos() {
-  const listaProductos = productos.map(p => p.nombre);
-
-  ['tablaEtiquetas', 'tablaCapsulas', 'tablaCajas'].forEach(tablaId => {
-    const tabla = document.getElementById(tablaId);
-    if (!tabla) return;
-
-    tabla.querySelectorAll('tbody tr').forEach(tr => {
-      const celda = tr.querySelector('td.producto');
-      if (!celda) return;
-
-      const valorActual = celda.querySelector('select')?.value || '';
-
-      const select = document.createElement('select');
-      select.innerHTML = `<option value="">--Seleccione--</option>` +
-                         listaProductos.map(p => `<option value="${p}">${p}</option>`).join('');
-
-      if (valorActual) select.value = valorActual;
-
-      celda.innerHTML = '';
-      celda.appendChild(select);
-    });
-  });
-}
 
 
 /********************************

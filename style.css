@@ -142,3 +142,72 @@ button:hover { opacity:0.8; }
   border-radius:6px;
   border:1px solid #ccc;
 }
+/* Fondo suave con blur */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.2);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+/* Caja modal */
+.modal-contenido {
+  background: #ffffff;
+  padding: 25px;
+  border-radius: 12px;
+  width: 350px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  animation: aparecer 0.25s ease;
+}
+
+/* Animación suave */
+@keyframes aparecer {
+  from { transform: translateY(-15px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-contenido input {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 6px;
+}
+
+.preview-img {
+  width: 100%;
+  max-height: 150px;
+  object-fit: contain;
+  margin-bottom: 10px;
+  border-radius: 6px;
+}
+
+/* Botones */
+.modal-botones {
+  display: flex;
+  justify-content: space-between;
+}
+
+.btn-guardar {
+  background: #2ecc71;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-cancelar {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-guardar:hover { opacity: 0.85; }
+.btn-cancelar:hover { opacity: 0.85; }
