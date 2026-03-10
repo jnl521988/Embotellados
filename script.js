@@ -91,6 +91,7 @@ function addFila(tablaId){
       i.addEventListener('change',()=>acumularStock(i));
     });
     tbody.appendChild(tr);
+    
   }
 }
 
@@ -115,50 +116,104 @@ function eliminarFila(btn){
  * GUARDAR / CARGAR
  **********************/
 function guardar(){
-  const datos = {};
-  document.querySelectorAll('table').forEach(tabla=>{
-    datos[tabla.id] = [];
-    tabla.querySelectorAll('tbody tr').forEach(tr=>{
-      const fila = [];
-      tr.querySelectorAll('td').forEach(td=>{
-        const campo = td.querySelector('input, select');
-        fila.push(campo ? campo.value : td.textContent);
-      });
-      datos[tabla.id].push(fila);
-    });
-  });
-  localStorage.setItem('bodega', JSON.stringify(datos));
-  alert('Datos guardados');
-}
 
-window.onload = ()=>{
-  const datos = JSON.parse(localStorage.getItem('bodega'));
+  const datos = {};
+
+  document.querySelectorAll("table").forEach(tabla=>{
+
+    if(!tabla.id) return;
+
+    datos[tabla.id] = [];
+
+    tabla.querySelectorAll("tbody tr").forEach(tr=>{
+
+      const fila = [];
+
+      tr.querySelectorAll("td").forEach(td=>{
+
+        const campo = td.querySelector("input, select");
+
+        if(campo){
+          fila.push(campo.value);
+        }else{
+          fila.push(td.textContent.trim());
+        }
+
+      });
+
+      datos[tabla.id].push(fila);
+
+    });
+
+  });
+
+  localStorage.setItem("bodega", JSON.stringify(datos));
+
+  alert("Datos guardados");
+
+}
+function cargar(){
+
+  const datos = JSON.parse(localStorage.getItem("bodega"));
   if(!datos) return;
 
-  document.querySelectorAll('table').forEach(tabla=>{
-    const guardado = datos[tabla.id];
-    if(!guardado) return;
+  Object.keys(datos).forEach(tablaId=>{
 
-    const filas = tabla.querySelectorAll('tbody tr');
-    guardado.forEach((fila,i)=>{
-      if(!filas[i]) return;
+    const tabla = document.getElementById(tablaId);
+    if(!tabla) return;
+
+    const tbody = tabla.querySelector("tbody");
+    const filasGuardadas = datos[tablaId];
+
+    if(!filasGuardadas) return;
+
+    const filasActuales = tbody.querySelectorAll("tr");
+
+    // crear filas que falten
+    for(let i=filasActuales.length;i<filasGuardadas.length;i++){
+
+      if(tablaId === "tablaInventario"){
+        addFilaInventario();
+      }else{
+        addFila(tablaId);
+      }
+
+    }
+
+    const filas = tbody.querySelectorAll("tr");
+
+    filasGuardadas.forEach((fila,i)=>{
+
       fila.forEach((valor,j)=>{
-        const campo = filas[i].cells[j]?.querySelector('input, select');
-        if(campo) campo.value = valor;
+
+        const celda = filas[i].cells[j];
+        if(!celda) return;
+
+        const campo = celda.querySelector("input, select");
+
+        if(campo){
+          campo.value = valor;
+        }
+
       });
+
     });
+    actualizarStocksEnProductos();
+
   });
 
-  // Inicializar Tirillas DO al cargar
-  document.querySelectorAll('#tablaTirillasDO tbody tr').forEach(fila => setupFilaTirillas(fila));
-};
+  // reinicializar tirillas
+  document.querySelectorAll('#tablaTirillasDO tbody tr').forEach(fila=>{
+    setupFilaTirillas(fila);
+  });
 
-
+}
 /**********************
  * EXPORTAR
  **********************/
 function exportarExcel() {
-  const paginaVisible = document.querySelector('.pagina[style*="display: block"]');
+  const paginaVisible = [...document.querySelectorAll('.pagina')]
+  .find(p => getComputedStyle(p).display !== 'none');
   if (!paginaVisible) { 
     alert('No hay tabla visible para exportar'); 
     return; 
@@ -233,7 +288,8 @@ function exportarExcel() {
 
 function exportarPDF() {
   // Detectar página visible
-  const paginaVisible = document.querySelector('.pagina[style*="display: block"]');
+const paginaVisible = [...document.querySelectorAll('.pagina')]
+  .find(p => getComputedStyle(p).display !== 'none');
   if (!paginaVisible) { alert('No hay tabla visible para exportar'); return; }
 
   const { jsPDF } = window.jspdf;
@@ -242,9 +298,9 @@ function exportarPDF() {
   // 📌 Página de productos con 3 tablas
   if (paginaVisible.id === 'Productos') {
     const tablas = [
-      { id: 'tablaCapsulasProd', titulo: '📦 Cápsulas' },
-      { id: 'tablaEtiquetasProd', titulo: '🏷 Etiquetas' },
-      { id: 'tablaCajasProd', titulo: '📦 Cajas' }
+      { id: 'tablaCapsulasProd', titulo: 'Cápsulas' },
+      { id: 'tablaEtiquetasProd', titulo: 'Etiquetas' },
+      { id: 'tablaCajasProd', titulo: 'Cajas' }
     ];
 
     tablas.forEach((t, index) => {
@@ -271,13 +327,50 @@ function exportarPDF() {
           const input = td.querySelector('input');
           const select = td.querySelector('select');
           const img = td.querySelector('img');
-          if (img) fila.push(''); // la imagen se puede omitir o poner texto placeholder
+if (img) fila.push({imagen: img.src});
           else fila.push(input ? input.value : (select ? select.value : td.textContent.trim()));
         });
         body.push(fila);
       });
 
-      pdf.autoTable({ head: [headers], body: body, startY: 50, theme: 'grid', styles: { fontSize: 10 } });
+    pdf.autoTable({
+  head: [headers],
+  body: body,
+  startY: 50,
+  theme: 'grid',
+  styles: { fontSize: 10 },
+
+  didDrawCell: function(data) {
+
+  if (data.section === 'body') {
+
+    const celda = data.cell.raw;
+
+    if (celda && celda.imagen) {
+
+      const padding = data.cell.padding('left');
+
+      const x = data.cell.x + padding;
+      const y = data.cell.y + padding;
+
+      const ancho = data.cell.width - padding*2;
+      const alto  = data.cell.height - padding*2;
+
+      pdf.addImage(
+        celda.imagen,
+        'JPEG',
+        x,
+        y,
+        ancho,
+        alto
+      );
+
+    }
+
+  }
+
+}
+});
     });
 
     pdf.save('Productos.pdf');
@@ -380,6 +473,7 @@ function acumularStock(input){
 
   entrada.value='';
   consumo.value='';
+  actualizarStocksEnProductos();
 }
 
 
@@ -562,62 +656,115 @@ function cerrarModalProducto() {
 
 // Guardar edición
 function guardarEdicionProducto() {
+
   const nombre = document.getElementById('edit-nombre').value.trim();
   const desc = document.getElementById('edit-desc').value.trim();
   const añada = document.getElementById('edit-añada').value.trim();
   const fotoInput = document.getElementById('edit-foto');
 
-  if(!nombre) { alert('El nombre es obligatorio'); return; }
+  if(!nombre){
+    alert('El nombre es obligatorio');
+    return;
+  }
 
   const prod = productos.find(p => p.id === productoEditandoId);
   if(!prod) return;
 
+  const nombreAnterior = prod.nombre; // 🔥 GUARDAMOS NOMBRE ANTIGUO
+
   const reader = new FileReader();
-  reader.onload = function(e) {
+
+  reader.onload = function(e){
+
     prod.nombre = nombre;
     prod.descripcion = desc;
     prod.añada = añada;
-    if(e.target.result) prod.foto = e.target.result;
+
+    if(e.target.result){
+      prod.foto = e.target.result;
+    }
+
+    // 🔥 ACTUALIZAR SELECTS DONDE APAREZCA EL PRODUCTO
+    actualizarNombreProductoEnTablas(nombreAnterior, nombre);
 
     guardarProductos();
     renderizarProductos();
     actualizarSelectProductos();
+    actualizarStocksEnProductos();
+
     cerrarModalProducto();
   };
 
-  if(fotoInput.files[0]) {
+  if(fotoInput.files[0]){
     reader.readAsDataURL(fotoInput.files[0]);
-  } else {
+  }else{
     reader.onload({target:{result:''}});
   }
-}
 
+}
 // Guardar en localStorage
 function guardarProductos() {
   localStorage.setItem('productos', JSON.stringify(productos));
+}
+function actualizarNombreProductoEnTablas(nombreViejo, nombreNuevo){
+
+  const tablas = [
+    "tablaEtiquetas",
+    "tablaCapsulas",
+    "tablaCajas"
+  ];
+
+  tablas.forEach(id => {
+
+    const tabla = document.getElementById(id);
+    if(!tabla) return;
+
+    tabla.querySelectorAll("tbody tr").forEach(fila => {
+
+      const select = fila.querySelector("td.producto select");
+      if(!select) return;
+
+      if(select.value === nombreViejo){
+        select.value = nombreNuevo;
+      }
+
+    });
+
+  });
+
 }
 
 /********************************************
  * 📦 STOCK GLOBAL POR PRODUCTO
  ********************************************/
 function obtenerStockProducto(nombreProd){
+
   let total = 0;
+
   const tablas = [
-    { id: "tablaEtiquetas", colStock: 6 },
-    { id: "tablaCapsulas",  colStock: 5 },
-    { id: "tablaCajas",     colStock: 5 }
+    "tablaEtiquetas",
+    "tablaCapsulas",
+    "tablaCajas"
   ];
-  tablas.forEach(obj => {
-    const tabla = document.getElementById(obj.id);
+
+  tablas.forEach(id => {
+
+    const tabla = document.getElementById(id);
     if(!tabla) return;
+
     tabla.querySelectorAll("tbody tr").forEach(fila => {
+
       const select = fila.querySelector("td.producto select");
-      const stockInput = fila.children[obj.colStock].querySelector("input");
+      const stockInput = fila.querySelector("input[disabled]");
+
       if(select && stockInput && select.value === nombreProd){
         total += parseInt(stockInput.value) || 0;
       }
+
     });
+
   });
+
   return total;
 }
 
@@ -673,6 +820,7 @@ function actualizarSelectProductos() {
   };
 
   Object.keys(mapas).forEach(tablaId => {
+
     const clase = mapas[tablaId];
     const tabla = document.getElementById(tablaId);
     if(!tabla) return;
@@ -680,24 +828,28 @@ function actualizarSelectProductos() {
     const lista = productos.filter(p => p.clase === clase);
 
     tabla.querySelectorAll('tbody tr').forEach(tr => {
+
       const celda = tr.querySelector('td.producto');
       if(!celda) return;
 
-      const valorActual = celda.querySelector('select')?.value || "";
+      let select = celda.querySelector('select');
 
-      const select = document.createElement('select');
-      select.innerHTML =
-        `<option value="">--Seleccione--</option>` +
-        lista.map(p => `<option value="${p.nombre}">${p.nombre}</option>`).join('');
+      // 🔹 Crear select solo si no existe
+      if(!select){
+        select = document.createElement('select');
 
-      select.value = valorActual;
-      celda.innerHTML = '';
-      celda.appendChild(select);
+        select.innerHTML =
+          `<option value="">--Seleccione--</option>` +
+          lista.map(p => `<option value="${p.nombre}">${p.nombre}</option>`).join('');
+
+        celda.appendChild(select);
+      }
+
     });
+
   });
+
 }
-
-
 
 /********************************
  * AÑADIR FILA EN TABLAS STOCK
@@ -707,6 +859,7 @@ function addFila(tablaId) {
   const tbody = tabla.querySelector('tbody');
   const filaBase = tbody.querySelector('tr'); // primera fila como plantilla
   const nuevaFila = filaBase.cloneNode(true);
+  
 
   // Limpiar inputs
   nuevaFila.querySelectorAll('input').forEach(i => {
@@ -743,14 +896,14 @@ const opcionesCorchos = {
 
 // 🔥 Genera selects para una fila dada
 function generarSelectsBotellas(fila){
-  fila.children[0].innerHTML = crearSelect(opcionesBotellas.marca);
-  fila.children[1].innerHTML = crearSelect(opcionesBotellas.modelo);
-  fila.children[2].innerHTML = crearSelect(opcionesBotellas.capacidad);
+  fila.children[1].innerHTML = crearSelect(opcionesBotellas.marca);
+  fila.children[2].innerHTML = crearSelect(opcionesBotellas.modelo);
+  fila.children[3].innerHTML = crearSelect(opcionesBotellas.capacidad);
 }
 
 function generarSelectsCorchos(fila){
-  fila.children[0].innerHTML = crearSelect(opcionesCorchos.marca);
-  fila.children[1].innerHTML = crearSelect(opcionesCorchos.modelo);
+  fila.children[1].innerHTML = crearSelect(opcionesCorchos.marca);
+  fila.children[2].innerHTML = crearSelect(opcionesCorchos.modelo);
 }
 
 
@@ -937,4 +1090,64 @@ document.addEventListener("change",e=>{
   if(e.target.id==="selectAllInv"){
     document.querySelectorAll('.selFila').forEach(c=>c.checked=e.target.checked);
   }
+});
+function seleccionarTodo(masterCheckbox){
+
+  const tabla = masterCheckbox.closest('table');
+  const checks = tabla.querySelectorAll('.fila-check');
+
+  checks.forEach(ch => {
+    ch.checked = masterCheckbox.checked;
+  });
+}
+function resetSeleccionadas(btn){
+
+  const seccion = btn.closest('section');
+  const tabla = seccion.querySelector('table');
+
+  const filas = tabla.querySelectorAll('tbody tr');
+
+  filas.forEach(tr => {
+
+    const check = tr.querySelector('.fila-check');
+    if(!check || !check.checked) return;
+
+    // Reset inputs
+    tr.querySelectorAll('input').forEach(input => {
+
+      if(input.type === "checkbox") return;
+
+      if(input.disabled){
+        input.value = 0;
+        if(input.dataset.acum) input.dataset.acum = 0;
+      }else{
+        input.value = "";
+      }
+
+    });
+
+    // Reset selects
+    tr.querySelectorAll('select').forEach(select => {
+      select.selectedIndex = 0; // vuelve a "Seleccione"
+    });
+
+    check.checked = false;
+
+  });
+
+  // Desmarcar checkbox maestro si existe
+  const master = tabla.querySelector('thead input[type="checkbox"]');
+  if(master) master.checked = false;
+}
+window.addEventListener("load", cargar);
+document.addEventListener("input", function(e){
+
+  if(
+    e.target.closest("#tablaEtiquetas") ||
+    e.target.closest("#tablaCapsulas") ||
+    e.target.closest("#tablaCajas")
+  ){
+    actualizarStocksEnProductos();
+  }
+
 });

@@ -43,9 +43,15 @@
 <section id="embotellado" class="pagina">
 <h2>Embotellado</h2>
 <button class="add-btn" onclick="addFila('tablaEmbotellado')">➕ Añadir fila</button>
+<button class="reset-btn" onclick="resetSeleccionadas(this)">
+  🔄 Reset seleccionadas
+</button>
 <table id="tablaEmbotellado">
 <thead>
 <tr>
+  <th>
+  <input type="checkbox" onclick="seleccionarTodo(this)">
+</th>
 <th>Fecha</th><th>Marca</th><th>Añada</th><th>Lote</th>
 <th>Embotellado</th><th>Sin Etiquetar</th><th>Etiquetado</th>
 <th>Muestra DO</th><th>Letra DO</th>
@@ -55,7 +61,7 @@
 </tr>
 </thead>
 <tbody>
-<tr onchange="calcEmbotellado(this)">
+<tr onchange="calcEmbotellado(this)"><td><input type="checkbox" class="fila-check"></td>
 <td><input type="date"></td>
 <td>
 <select>
@@ -126,9 +132,15 @@
 <section id="botellas" class="pagina">
 <h2>Botellas</h2>
 <button class="add-btn" onclick="addFila('tablaBotellas')">➕ Añadir fila</button>
+<button class="reset-btn" onclick="resetSeleccionadas(this)">
+  🔄 Reset seleccionadas
+</button>
 <table id="tablaBotellas">
 <thead>
 <tr>
+  <th>
+  <input type="checkbox" onclick="seleccionarTodo(this)">
+</th>
 <th>Marca</th><th>Modelo</th><th>Capacidad</th>
 <th>Entrada</th><th>Total</th>
 <th>Consumo</th><th>Gasto</th>
@@ -136,13 +148,13 @@
 </tr>
 </thead>
 <tbody>
-<tr><td>SAVERGLASS</td><td>PREMIERE</td><td>0.75</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
-<tr><td>SAVERGLASS</td><td>VINO SANTO</td><td>0.75</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
-<tr><td>SAVERGLASS</td><td>ANCIENNE 2</td><td>0.75</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
-<tr><td>VIDRIALA</td><td>BD CLARA</td><td>0.75</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
-<tr><td>VIDRIALA</td><td>BD RESERVA</td><td>0.75</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
-<tr><td>VIDRIALA</td><td>BD RESERVA</td><td>0.5</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
-<tr><td>VIDRIALA</td><td>BD MG PLUS</td><td>1.5</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
+<tr><td><input type="checkbox" class="fila-check"></td><td>SAVERGLASS</td><td>PREMIERE</td><td>0.75</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
+<tr><td><input type="checkbox" class="fila-check"></td><td>SAVERGLASS</td><td>VINO SANTO</td><td>0.75</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
+<tr><td><input type="checkbox" class="fila-check"></td><td>SAVERGLASS</td><td>ANCIENNE 2</td><td>0.75</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
+<tr><td><input type="checkbox" class="fila-check"></td><td>VIDRIALA</td><td>BD CLARA</td><td>0.75</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
+<tr><td><input type="checkbox" class="fila-check"></td><td>VIDRIALA</td><td>BD RESERVA</td><td>0.75</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
+<tr><td><input type="checkbox" class="fila-check"></td><td>VIDRIALA</td><td>BD RESERVA</td><td>0.5</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
+<tr><td><input type="checkbox" class="fila-check"></td><td>VIDRIALA</td><td>BD MG PLUS</td><td>1.5</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
 </tbody>
 </table>
 </section>
@@ -151,9 +163,15 @@
 <section id="corchos" class="pagina">
 <h2>Corchos</h2>
 <button class="add-btn" onclick="addFila('tablaCorchos')">➕ Añadir fila</button>
+<button class="reset-btn" onclick="resetSeleccionadas(this)">
+  🔄 Reset seleccionadas
+</button>
 <table id="tablaCorchos">
 <thead>
 <tr>
+  <th>
+  <input type="checkbox" onclick="seleccionarTodo(this)">
+</th>
 <th>Marca</th><th>Modelo</th>
 <th>Entrada</th><th>Total</th>
 <th>Consumo</th><th>Gasto</th>
@@ -161,13 +179,13 @@
 </tr>
 </thead>
 <tbody>
-<tr><td>Bourrasse</td><td>24 Mozas</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
-<tr><td>Bourrasse</td><td>Madremia</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
-<tr><td>Bourrasse</td><td>Platón</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
-<tr><td>Bourrasse</td><td>El Principito</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
-<tr><td>Ebrocork</td><td>Abracadabra</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
-<tr><td>Amorin Cork</td><td>Abracadabra</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
-<tr><td>J. Vigas</td><td>Toro</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
+<tr><td><input type="checkbox" class="fila-check"></td><td>Bourrasse</td><td>24 Mozas</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
+<tr><td><input type="checkbox" class="fila-check"></td><td>Bourrasse</td><td>Madremia</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
+<tr><td><input type="checkbox" class="fila-check"></td><td>Bourrasse</td><td>Platón</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
+<tr><td><input type="checkbox" class="fila-check"></td><td>Bourrasse</td><td>El Principito</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
+<tr><td><input type="checkbox" class="fila-check"></td><td>Ebrocork</td><td>Abracadabra</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
+<tr><td><input type="checkbox" class="fila-check"></td><td>Amorin Cork</td><td>Abracadabra</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
+<tr><td><input type="checkbox" class="fila-check"></td><td>J. Vigas</td><td>Toro</td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input onchange="acumularStock(this)"></td><td><input disabled value="0"></td><td><input disabled value="0"></td><td><button onclick="eliminarFila(this)">🗑️</button></td></tr>
 </tbody>
 </table>
 </section>
@@ -176,9 +194,15 @@
 <section id="tirillasDO" class="pagina">
 <h2>Tirillas DO</h2>
 <button class="add-btn" onclick="addFila('tablaTirillasDO')">➕ Añadir fila</button>
+<button class="reset-btn" onclick="resetSeleccionadas(this)">
+  🔄 Reset seleccionadas
+</button>
 <table id="tablaTirillasDO">
 <thead>
 <tr>
+  <th>
+  <input type="checkbox" onclick="seleccionarTodo(this)">
+</th>
 <th>Fecha</th><th>Marca</th><th>Añada</th><th>Muestra DO</th><th>Letra DO</th>
 <th>DO Desde</th><th>DO Hasta</th><th>Total DO</th><th>Consumo DO</th>
 <th>Consumo Rotas DO</th><th>Gasto DO</th><th>Roturas DO</th><th>Existencias</th><th>Eliminar</th>
@@ -186,6 +210,7 @@
 </thead>
 <tbody>
 <tr>
+  <td><input type="checkbox" class="fila-check"></td>
 <td><input type="date"></td>
 <td><select>
 <option>24 Mozas</option><option>Madremia</option><option>Abracadabra</option>
@@ -216,14 +241,21 @@
 <section id="etiquetas" class="pagina">
 <h2>Etiquetas</h2>
 <button class="add-btn" onclick="addFila('tablaEtiquetas')">➕ Añadir fila</button>
+<button class="reset-btn" onclick="resetSeleccionadas(this)">
+  🔄 Reset seleccionadas
+</button>
 <table id="tablaEtiquetas">
 <thead>
 <tr>
+  <th>
+  <input type="checkbox" onclick="seleccionarTodo(this)">
+</th>
 <th>Producto</th><th>Añada</th><th>Entrada</th><th>Total</th><th>Consumo</th><th>Gasto</th><th>Stock</th><th>Eliminar</th>
 </tr>
 </thead>
 <tbody>
 <tr>
+  <td><input type="checkbox" class="fila-check"></td>
   <td class="producto"></td> <!-- select dinámico -->
   <td><input type="number" onchange="acumularStock(this)"></td> <!-- Añada -->
   <td><input type="number" onchange="acumularStock(this)"></td> <!-- Entrada -->
@@ -243,14 +275,21 @@
 <section id="capsulas" class="pagina">
 <h2>Cápsulas</h2>
 <button class="add-btn" onclick="addFila('tablaCapsulas')">➕ Añadir fila</button>
+<button class="reset-btn" onclick="resetSeleccionadas(this)">
+  🔄 Reset seleccionadas
+</button>
 <table id="tablaCapsulas">
 <thead>
 <tr>
+  <th>
+  <input type="checkbox" onclick="seleccionarTodo(this)">
+</th>
 <th>Producto</th><th>Entrada</th><th>Total</th><th>Consumo</th><th>Gasto</th><th>Stock</th><th>Eliminar</th>
 </tr>
 </thead>
 <tbody>
 <tr>
+  <td><input type="checkbox" class="fila-check"></td>
   <td class="producto"></td>
   <td><input onchange="acumularStock(this)"></td>
   <td><input disabled value="0"></td>
@@ -268,14 +307,21 @@
 <section id="cajas" class="pagina">
 <h2>Cajas</h2>
 <button class="add-btn" onclick="addFila('tablaCajas')">➕ Añadir fila</button>
+<button class="reset-btn" onclick="resetSeleccionadas(this)">
+  🔄 Reset seleccionadas
+</button>
 <table id="tablaCajas">
 <thead>
 <tr>
+  <th>
+  <input type="checkbox" onclick="seleccionarTodo(this)">
+</th>
 <th>Producto</th><th>Entrada</th><th>Total</th><th>Consumo</th><th>Gasto</th><th>Stock</th><th>Eliminar</th>
 </tr>
 </thead>
 <tbody>
 <tr>
+  <td><input type="checkbox" class="fila-check"></td>
   <td class="producto"></td>
   <td><input onchange="acumularStock(this)"></td>
   <td><input disabled value="0"></td>
