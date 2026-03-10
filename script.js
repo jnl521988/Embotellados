@@ -1151,3 +1151,46 @@ document.addEventListener("input", function(e){
   }
 
 });
+// Exportar todo el localStorage relevante a JSON
+document.getElementById('exportarDatos').addEventListener('click', () => {
+  const backup = {
+    bodega: JSON.parse(localStorage.getItem('bodega') || '{}'),
+    productos: JSON.parse(localStorage.getItem('productos') || '[]')
+  };
+
+  const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `backup_bodega_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+// Importar datos desde archivo JSON
+document.getElementById('importarDatosBtn').addEventListener('click', () => {
+  document.getElementById('importarDatos').click();
+});
+
+document.getElementById('importarDatos').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(event) {
+    try {
+      const data = JSON.parse(event.target.result);
+
+      // Restaurar datos
+      if (data.bodega) localStorage.setItem('bodega', JSON.stringify(data.bodega));
+      if (data.productos) localStorage.setItem('productos', JSON.stringify(data.productos));
+
+      alert('Datos importados correctamente. Recarga la página para verlos.');
+    } catch (err) {
+      alert('Error al importar el archivo. Asegúrate de que sea un backup válido.');
+      console.error(err);
+    }
+  };
+  reader.readAsText(file);
+});
