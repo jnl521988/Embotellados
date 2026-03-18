@@ -211,3 +211,8 @@ button:hover { opacity:0.8; }
 
 .btn-guardar:hover { opacity: 0.85; }
 .btn-cancelar:hover { opacity: 0.85; }
+td img{
+  max-width:60px;
+  max-height:60px;
+  object-fit:contain;
+}
