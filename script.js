@@ -149,8 +149,6 @@ function guardar(){
 
   localStorage.setItem("bodega", JSON.stringify(datos));
 
-  alert("Datos guardados");
-
 }
 function cargar(){
 
@@ -195,9 +193,20 @@ function cargar(){
           campo.value = valor;
         }
 
+        // Restaurar acumuladores de Total y Gasto
+if (campo && campo.disabled) {
+
+    const encabezado = tabla.rows[0].cells[j].textContent.trim();
+
+    if (encabezado === "Total" || encabezado === "Gasto") {
+        campo.dataset.acum = valor || 0;
+    }
+}
+
       });
 
     });
+
     actualizarStocksEnProductos();
 
   });
@@ -473,7 +482,8 @@ function acumularStock(input){
 
   entrada.value='';
   consumo.value='';
-  actualizarStocksEnProductos();
+ actualizarStocksEnProductos();
+ guardar();
 }
 
 
@@ -562,7 +572,7 @@ function renderizarProductos() {
 
   productos.forEach(prod => {
 
-    const fila = `
+    const filaConAnada = `
       <tr>
         <td>${prod.nombre}</td>
         <td>${prod.foto ? `<img src="${prod.foto}" width="50">` : ""}</td>
@@ -576,9 +586,30 @@ function renderizarProductos() {
       </tr>
     `;
 
-    if(prod.clase === "capsulas") capsBody.innerHTML += fila;
-    if(prod.clase === "etiquetas") etiqBody.innerHTML += fila;
-    if(prod.clase === "cajas") cajasBody.innerHTML += fila;
+    const filaSinAnada = `
+      <tr>
+        <td>${prod.nombre}</td>
+        <td>${prod.foto ? `<img src="${prod.foto}" width="50">` : ""}</td>
+        <td>${prod.descripcion || ""}</td>
+        <td class="stock-prod">0</td>
+        <td>
+          <button onclick="abrirModalEditar(${prod.id})">Editar</button>
+          <button onclick="eliminarProducto(${prod.id})">Eliminar</button>
+        </td>
+      </tr>
+    `;
+
+    if(prod.clase === "etiquetas"){
+      etiqBody.innerHTML += filaConAnada;
+    }
+
+    if(prod.clase === "capsulas"){
+      capsBody.innerHTML += filaSinAnada;
+    }
+
+    if(prod.clase === "cajas"){
+      cajasBody.innerHTML += filaSinAnada;
+    }
 
   });
 
@@ -649,9 +680,10 @@ function abrirModalEditar(id) {
 }
 
 // Cerrar modal
-function cerrarModalProducto() {
+function cerrarModalProducto(){
   document.getElementById('modalEditarProducto').style.display = 'none';
   productoEditandoId = null;
+  fotoEliminada = false;
 }
 
 // Guardar edición
@@ -703,24 +735,25 @@ function guardarEdicionProducto() {
   finalizarEdicion();
 
 
-  function finalizarEdicion(){
+ function finalizarEdicion(){
 
-    actualizarNombreProductoEnTablas(nombreAnterior, nombre);
+  actualizarNombreProductoEnTablas(nombreAnterior, nombre);
 
-    guardarProductos();
-    renderizarProductos();
-    actualizarSelectProductos();
-    actualizarStocksEnProductos();
+  guardarProductos();
+  renderizarProductos();
+  actualizarSelectProductos();
+  actualizarStocksEnProductos();
 
-    cerrarModalProducto();
-  }
+
+  cerrarModalProducto();
+}
 
 
 }
 let fotoEliminada = false;
 
 function quitarFotoProducto(){
-  const preview = document.getElementById("previewFoto");
+  const preview = document.getElementById("preview-foto");
   const input = document.getElementById("edit-foto");
 
   if(preview) preview.src = "";
@@ -767,25 +800,25 @@ function obtenerStockProducto(nombreProd){
 
   let total = 0;
 
-  const tablas = [
-    "tablaEtiquetas",
-    "tablaCapsulas",
-    "tablaCajas"
-  ];
-
-  tablas.forEach(id => {
+  ["tablaEtiquetas","tablaCapsulas","tablaCajas"].forEach(id=>{
 
     const tabla = document.getElementById(id);
     if(!tabla) return;
 
-    tabla.querySelectorAll("tbody tr").forEach(fila => {
+    tabla.querySelectorAll("tbody tr").forEach(fila=>{
 
       const select = fila.querySelector("td.producto select");
-      const stockInput = fila.querySelector("input[disabled]");
+      if(!select || select.value !== nombreProd) return;
 
-      if(select && stockInput && select.value === nombreProd){
-        total += parseInt(stockInput.value) || 0;
+      let stock;
+
+      if(id==="tablaEtiquetas"){
+        stock = fila.cells[7].querySelector("input");
+      }else{
+        stock = fila.cells[6].querySelector("input");
       }
+
+      total += Number(stock.value)||0;
 
     });
 
