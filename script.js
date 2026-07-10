@@ -586,30 +586,44 @@ function renderizarProductos() {
       </tr>
     `;
 
-    const filaSinAnada = `
-      <tr>
-        <td>${prod.nombre}</td>
-        <td>${prod.foto ? `<img src="${prod.foto}" width="50">` : ""}</td>
-        <td>${prod.descripcion || ""}</td>
-        <td class="stock-prod">0</td>
-        <td>
-          <button onclick="abrirModalEditar(${prod.id})">Editar</button>
-          <button onclick="eliminarProducto(${prod.id})">Eliminar</button>
-        </td>
-      </tr>
-    `;
+  const filaCapsulas = `
+<tr>
+  <td>${prod.nombre}</td>
+  <td>${prod.foto ? `<img src="${prod.foto}" width="50">` : ""}</td>
+  <td>${prod.descripcion || ""}</td>
+  <td class="stock-prod">0</td>
+  <td>
+    <button onclick="abrirModalEditar(${prod.id})">Editar</button>
+    <button onclick="eliminarProducto(${prod.id})">Eliminar</button>
+  </td>
+</tr>
+`;
+
+const filaCajas = `
+<tr>
+  <td>${prod.nombre}</td>
+  <td>${prod.foto ? `<img src="${prod.foto}" width="50">` : ""}</td>
+  <td>${prod.descripcion || ""}</td>
+  <td class="stock-prod">0</td>
+  <td class="botellas-prod">0</td>
+  <td>
+    <button onclick="abrirModalEditar(${prod.id})">Editar</button>
+    <button onclick="eliminarProducto(${prod.id})">Eliminar</button>
+  </td>
+</tr>
+`;
 
     if(prod.clase === "etiquetas"){
       etiqBody.innerHTML += filaConAnada;
     }
 
     if(prod.clase === "capsulas"){
-      capsBody.innerHTML += filaSinAnada;
-    }
+  capsBody.innerHTML += filaCapsulas;
+}
 
-    if(prod.clase === "cajas"){
-      cajasBody.innerHTML += filaSinAnada;
-    }
+if(prod.clase === "cajas"){
+  cajasBody.innerHTML += filaCajas;
+}
 
   });
 
@@ -850,7 +864,30 @@ function actualizarStocksEnProductos(){
 
       if(!nombre || !celdaStock) return;
 
-      celdaStock.textContent = obtenerStockProducto(nombre);
+      const stock = obtenerStockProducto(nombre);
+
+celdaStock.textContent = stock;
+
+// Solo para la tabla de cajas
+if(id === "tablaCajasProd"){
+
+    const celdaBotellas = fila.querySelector(".botellas-prod");
+
+    let botellas = 0;
+
+    if(nombre.toLowerCase().includes("estuche individual")){
+        botellas = stock * 1;
+    }
+    else if(nombre.toLowerCase().includes("estuche")){
+        botellas = stock * 3;
+    }
+    else{
+        // cajas normales y maletín mixto
+        botellas = stock * 6;
+    }
+
+    celdaBotellas.textContent = botellas;
+}
 
     });
 
